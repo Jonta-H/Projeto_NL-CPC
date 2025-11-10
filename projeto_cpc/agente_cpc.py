@@ -32,7 +32,7 @@ client = OpenAI(
     api_key=GROQ_API_KEY
 )
 
-# --- Nossas 3 funções-helper (Estáveis e Corretas) ---
+# --- Funções para ajudar a LLM ---
 
 def analisar_proposicao(texto_bruto: str) -> dict:
     """Caso base: analisa um texto em busca de negação."""
@@ -56,12 +56,18 @@ def analisar_proposicao(texto_bruto: str) -> dict:
 def determinar_operador_principal(conectivos: list) -> str:
     """Decide o operador principal com base na prioridade."""
     prioridade = {
-        "BIIMPLICACAO": 4, "CONDICIONAL": 3, "CONJUNCAO": 2,
-        "DISJUNCAO": 1, "NEGACAO": 0
+        "NEGACAO_ESCOPO": 5,  # Prioridade mais alta
+        "BIIMPLICACAO": 4,
+        "CONDICIONAL": 3,
+        "CONJUNCAO": 2,
+        "DISJUNCAO": 1,
+        "NEGACAO_SIMPLES": 0  # Prioridade mais baixa (será ignorada)
     }
     operador_principal_str = "None"
     max_prioridade = -1
+
     if not conectivos: return "None"
+
     for con in conectivos:
         tipo = con.get("tipo")
         if tipo in prioridade and prioridade[tipo] > max_prioridade:
@@ -70,47 +76,69 @@ def determinar_operador_principal(conectivos: list) -> str:
             elif tipo == "CONDICIONAL": operador_principal_str = "Implies"
             elif tipo == "CONJUNCAO": operador_principal_str = "And"
             elif tipo == "DISJUNCAO": operador_principal_str = "Or"
-    if operador_principal_str == "None" and any(c.get("tipo") == "NEGACAO" for c in conectivos):
-        return "Not"
+            elif tipo == "NEGACAO_ESCOPO": operador_principal_str = "Not" 
+    
+        
     return operador_principal_str
 
-def criar_prompt_otimizado(componentes_spacy: dict, operador_principal_py: str) -> str:
+def criar_prompt_otimizado(texto_original: str, operador_principal_py: str) -> str:
     """Cria o prompt para o LLM extrair as sub-partes."""
-    texto_original = componentes_spacy['texto_original']
+    
     instrucao_base = f"""
     Você é um assistente de extração de texto.
     Frase Original: "{texto_original}"
     Sua tarefa é extrair os pedaços de texto (proposições) da frase.
+    
+    **REGRA IMPORTANTE**: NÃO inclua os conectivos lógicos (como "Se", "então", "e", "ou", "é falso que") nas strings de texto que você extrai.
+    
     Responda APENAS com o JSON solicitado, sem nenhum texto extra.
     """
+
     if operador_principal_py == "Equivalent":
         prompt = f"""{instrucao_base}
-        A frase é uma BI-IMPLICAÇÃO. Extraia os dois lados (lado_1, lado_2).
+        A frase é uma BI-IMPLICAÇÃO ('se e somente se'). 
+        Extraia os dois lados (lado_1, lado_2).
         JSON de Saída: {{"lado_1": "...", "lado_2": "..."}}"""
+        
     elif operador_principal_py == "Implies":
         prompt = f"""{instrucao_base}
-        A frase é uma IMPLICAÇÃO. Extraia a CONDIÇÃO e a CONSEQUÊNCIA.
-        JSON de Saída: {{"condicao": "...", "consequencia": "..."}}"""
+        A frase é uma IMPLICAÇÃO ('Se...'). 
+        Extraia a CONDIÇÃO (o texto após o 'Se') e a CONSEQUÊNCIA (o resto da frase).
+        
+        Exemplo para "Se P, então se Q, R":
+        JSON de Saída: {{"condicao": "P", "consequencia": "se Q, R"}}
+        
+        Sua tarefa:
+        JSON de Saída:"""
+
     elif operador_principal_py == "And":
         prompt = f"""{instrucao_base}
-        A frase é uma CONJUNÇÃO. Extraia todas as proposições.
+        A frase é uma CONJUNÇÃO ('e', 'mas'). 
+        Extraia todas as proposições que estão sendo unidas.
         JSON de Saída: {{"proposicoes": ["...", "..."]}}"""
+        
     elif operador_principal_py == "Or":
         prompt = f"""{instrucao_base}
-        A frase é uma DISJUNÇÃO. Extraia todas as proposições.
+        A frase é uma DISJUNÇÃO ('ou'). 
+        Extraia todas as proposições que estão sendo separadas.
         JSON de Saída: {{"proposicoes": ["...", "..."]}}"""
+
     elif operador_principal_py == "Not":
         prompt = f"""{instrucao_base}
-        A frase é uma NEGAÇÃO SIMPLES. Extraia a proposição que está sendo negada (o texto sem a negação).
-        JSON de Saída: {{"proposicao_negada": "..."}}"""
+        A frase é uma NEGAÇÃO DE ESCOPO ('É falso que...'). 
+        Extraia a proposição inteira que está sendo negada.
+        (Ex: "É falso que P e Q" -> {{"proposicao_negada": "P e Q"}})
+        JSON de Saída:"""
+    
     else: # "None"
         prompt = f"""{instrucao_base}
         A frase é uma proposição simples. Extraia-a.
         JSON de Saída: {{"proposicao": "..."}}"""
+    
     return prompt
 
 
-# --- NOVA FUNÇÃO RECURSIVA ---
+# --- FUNÇÃO RECURSIVA ---
 def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_letra_pool: list) -> str:
     """
     Função principal que analisa uma string, determina seu operador
@@ -183,7 +211,7 @@ def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_
     raise Exception(f"Operador desconhecido na recursão: {operador}")
 
 
-# --- FUNÇÃO PRINCIPAL (ORQUESTRADOR) ---
+# --- FUNÇÃO PRINCIPAL ---
 def traduzir_para_cpc(texto_entrada: str):
     print(f"💬 Texto Original: {texto_entrada}")
     

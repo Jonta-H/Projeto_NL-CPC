@@ -13,37 +13,32 @@ CPC_MAP = {
 def formatar_para_cpc(expr) -> str:
     """
     Converte recursivamente um objeto de expressão SymPy para a notação CPC padrão.
-    Ex: Implies(And(P, Q), R) -> ((P ^ Q) -> R)
     """
-    # Caso base: se for uma proposição (P, Q), retorna seu nome
+    # Caso base: P, Q, R
     if isinstance(expr, Symbol):
         return str(expr)
     
-    # Caso recursivo: Negação (operador unário)
+    # --- LÓGICA DE NEGAÇÃO CORRIGIDA ---
     if isinstance(expr, Not):
-        # Pega o argumento dentro do Not (ex: P em Not(P))
         arg = expr.args[0]
-        # Formata o argumento e adiciona o '¬'
-        # Adicionamos parênteses se o argumento for complexo (ex: ¬(P ^ Q))
+        # Formata o argumento (ex: (P ^ Q) ou P)
         formatted_arg = formatar_para_cpc(arg)
-        if isinstance(arg, Symbol):
-            return f"¬{formatted_arg}"
-        else:
-            return f"¬({formatted_arg})"
+        
+        # Apenas adiciona o '¬'. A sub-expressão já tem
+        # seus próprios parênteses, se necessário.
+        return f"¬{formatted_arg}"
+    # --- FIM DA CORREÇÃO ---
 
     # Caso recursivo: Operadores binários (And, Or, Implies...)
     if expr.func in CPC_MAP:
-        # Pega o operador do nosso dicionário (ex: '->')
         op = CPC_MAP[expr.func]
         
-        # Pega os argumentos da esquerda e da direita
+        # Formata todos os argumentos recursivamente
         args = [formatar_para_cpc(arg) for arg in expr.args]
         
-        # Formata recursivamente os dois lados e os junta com o operador
-        # Sempre adicionamos parênteses para garantir a precedência correta
+        # Junta tudo com o operador, dentro de parênteses
         return f"({f' {op} '.join(args)})"
         
-    # Caso não seja um tipo conhecido
     raise TypeError(f"Tipo de expressão não suportado: {type(expr)}")
 
 
