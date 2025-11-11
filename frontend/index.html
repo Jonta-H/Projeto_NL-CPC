@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradutor NL -> Cálculo Proposicional</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Tradutor NL ➡️ CPC</h1>
+        <p>Digite uma frase em linguagem natural para converter em Cálculo Proposicional Clássico.</p>
+        
+        <textarea id="input-texto" rows="6" placeholder="Ex: 'Se chove, então a rua fica molhada.'"></textarea>
+        
+        <button id="btn-traduzir">Traduzir</button>
+        
+        <div class="resultado-container">
+            <h3>Resultado:</h3>
+            <div id="loading-spinner" class="spinner" style="display: none;"></div>
+            <pre id="output-resultado"></pre>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
