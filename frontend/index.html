@@ -1,27 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tradutor NL -> Cálculo Proposicional</title>
+    <title>Tradutor NL-CPC</title>
     <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Tradutor NL ➡️ CPC</h1>
-        <p>Digite uma frase em linguagem natural para converter em Cálculo Proposicional Clássico.</p>
-        
-        <textarea id="input-texto" rows="6" placeholder="Ex: 'Se chove, então a rua fica molhada.'"></textarea>
-        
-        <button id="btn-traduzir">Traduzir</button>
-        
-        <div class="resultado-container">
-            <h3>Resultado:</h3>
-            <div id="loading-spinner" class="spinner" style="display: none;"></div>
-            <pre id="output-resultado"></pre>
+
+    <a href="https://github.com/seu-usuario/seu-repositorio" target="_blank" class="github-icon">
+        <i class="fa-brands fa-github"></i>
+    </a>
+
+    <div class="main-container">
+        <h1>Tradutor NL-CPC</h1>
+
+        <div class="interaction-block">
+            
+            <div class="toggle-group" id="function-toggle">
+                <input type="radio" id="mode-nl-cpc" name="translation-mode" value="nl-cpc" checked>
+                <label for="mode-nl-cpc"><i class="fa-solid fa-comment"></i> NL ➔ CPC</label>
+
+                <input type="radio" id="mode-cpc-nl" name="translation-mode" value="cpc-nl">
+                <label for="mode-cpc-nl"><i class="fa-solid fa-brain"></i> CPC ➔ NL</label>
+            </div>
+
+            <textarea id="user-input" placeholder="Digite aqui sua frase em linguagem natural..."></textarea>
+            
+            <div class="generation-options-container" id="generation-options-container">
+                <p class="section-label">Como gerar o exemplo?</p>
+                <div class="toggle-group" id="generation-toggle">
+                    <input type="radio" id="gen-auto" name="generation-mode" value="auto" checked>
+                    <label for="gen-auto">Automática</label>
+
+                    <input type="radio" id="gen-manual" name="generation-mode" value="manual">
+                    <label for="gen-manual">Glossário</label>
+                </div>
+
+                <p id="description-auto" class="generation-description">
+                    A inteligência artificial irá criar um exemplo completo do zero, definindo o significado de cada átomo e montando a frase.
+                </p>
+                <p id="description-manual" class="generation-description">
+                    Você fornecerá o significado de cada átomo (p, q, r, etc.), e a IA irá montar a frase lógica.
+                </p>
+
+                <textarea id="glossary-input" placeholder="Defina seu glossário aqui... (Ex: p: O sol está quente)"></textarea>
+
+            </div>
+
+            <button id="action-button" class="action-button">
+                <i class="fa-solid fa-play"></i>
+                <span id="button-text">Traduzir</span>
+            </button>
+
         </div>
+        
+        <div id="response-area" class="response-area">
+            <div id="loader" class="loader"></div>
+            <pre id="response-output"></pre>
+        </div>
+
     </div>
-    
-    <script src="script.js"></script>
+
+    <script src="script.js" defer></script>
 </body>
 </html>

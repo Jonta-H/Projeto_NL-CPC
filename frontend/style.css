@@ -1,89 +1,305 @@
+/* --- Estilos Globais e Reset --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #f4f7f6;
-    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: #343541;
+    color: #ececf1;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
     padding: 20px;
 }
 
-.container {
-    width: 100%;
-    max-width: 600px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 24px;
+/* --- Ícone do GitHub --- */
+.github-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #ececf1;
+    font-size: 2.5rem;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.github-icon:hover {
+    color: #10a37f;
+    transform: scale(1.1);
 }
 
+/* --- Container Principal do Conteúdo --- */
+.main-container {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+/* --- Título do Projeto --- */
 h1 {
     text-align: center;
-    color: #2c3e50;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-p {
+/* --- Bloco de Interação (Toggle, Input, Botão) --- */
+.interaction-block {
+    background-color: #40414f;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* (MUDOU) Reduzido para diminuir espaços vazios */
+}
+
+/* --- Toggles (Controle Segmentado) --- */
+.toggle-group {
+    display: flex;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #565869;
+}
+
+.toggle-group input[type="radio"] {
+    display: none;
+}
+
+.toggle-group label {
+    flex: 1;
     text-align: center;
-    color: #555;
-    margin-bottom: 20px;
-}
-
-textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box; /* Importante para o padding não quebrar o layout */
-    font-size: 1rem;
-    margin-bottom: 12px;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: bold;
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    background-color: #40414f;
+    color: #ececf1;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-button:hover {
-    background-color: #2980b9;
+.toggle-group input[type="radio"]:checked + label {
+    background-color: #565869;
+    color: #ffffff;
+    font-weight: 600;
 }
 
-.resultado-container {
-    margin-top: 20px;
+.toggle-group label:not(:last-child) {
+    border-right: 1px solid #565869;
 }
 
-pre {
-    background-color: #ecf0f1;
+/* --- Caixa de Entrada de Texto --- */
+#user-input {
+    width: 100%;
+    min-height: 60px; /* (MUDOU) Altura mínima reduzida */
+    background-color: #343541;
+    border: 1px solid #565869;
+    border-radius: 8px;
     padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    color: #ececf1;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#user-input::placeholder {
+    color: #8e8ea0;
+}
+#user-input:focus {
+    border-color: #10a37f;
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.3);
+}
+
+/* --- Opções de Geração (Toggle 2) Container --- */
+.generation-options-container {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* (MUDOU) Reduzido para diminuir espaços vazios */
+    padding-top: 10px;
+    border-top: 1px dashed #565869;
+}
+.generation-options-container.show {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+}
+
+.section-label {
+    font-size: 0.9rem;
+    color: #8e8ea0;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* --- Descrições Dinâmicas --- */
+.generation-description {
+    font-size: 0.85rem;
+    color: #8e8ea0;
+    text-align: center;
+    line-height: 1.5;
+    margin-top: -5px;
+    /* (MUDOU) JS controla com display */
+    display: none; 
+}
+.generation-description.show {
+    /* (MUDOU) JS agora usa esta classe para mostrar */
+    display: block; 
+}
+.generation-description b {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* --- Caixa de Entrada do Glossário --- */
+#glossary-input {
+    width: 100%;
+    min-height: 40px; /* (MUDOU) Altura mínima reduzida */
+    background-color: #343541;
+    border: 1px solid #565869;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: #ececf1;
+    resize: vertical;
+    outline: none;
+    
+    /* (MUDOU) Lógica de fade-in restaurada */
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(-5px);
+    transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease, margin-top 0.3s ease;
+}
+#glossary-input::placeholder {
+    color: #8e8ea0;
+}
+#glossary-input:focus {
+    border-color: #10a37f;
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.3);
+}
+#glossary-input.show {
+    /* (MUDOU) Classe que o JS usa para mostrar */
+    opacity: 1;
+    max-height: 150px; /* Altura máxima para animação */
+    transform: translateY(0);
+    margin-top: 5px; /* Espaço quando visível */
+}
+
+/* --- Botão de Ação (Traduzir/Gerar) --- */
+.action-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #10a37f;
+    color: #ffffff;
     font-size: 1.1rem;
-    color: #2c3e50;
-    white-space: pre-wrap; /* Quebra a linha se for muito grande */
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px; /* (NOVO) Adiciona espaço acima do botão */
+}
+.action-button:hover {
+    background-color: #0f9272;
+    transform: translateY(-2px);
+}
+.action-button:active {
+    transform: translateY(0);
+}
+
+/* --- Área de Resposta --- */
+.response-area {
+    width: 100%;
+    background-color: #40414f;
+    border: 1px solid #565869;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, max-height 0.4s ease, transform 0.4s ease;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+}
+.response-area.show {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+    padding: 25px;
+}
+
+#response-output {
+    width: 100%;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 0.95rem;
+    color: #ececf1;
+    white-space: pre-wrap;
     word-wrap: break-word;
-    min-height: 50px;
+    overflow-x: auto;
+    display: none; 
 }
 
-/* Spinner (para feedback de carregamento) */
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 36px;
-    height: 36px;
+/* --- Spinner de Carregamento --- */
+.loader {
+    display: none;
+    width: 45px;
+    height: 45px;
+    border: 5px solid #565869;
+    border-top-color: #10a37f;
     border-radius: 50%;
-    border-left-color: #3498db;
-    animation: spin 1s ease infinite;
-    margin: 10px auto;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* --- Media Queries para Responsividade --- */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    .github-icon {
+        font-size: 2rem;
+        top: 15px;
+        right: 15px;
+    }
+    .interaction-block, .response-area {
+        padding: 20px;
+    }
+    .toggle-group label {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    .action-button {
+        font-size: 1rem;
+        padding: 12px;
+    }
+    .main-container {
+        padding: 10px;
+    }
 }

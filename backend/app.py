@@ -5,15 +5,15 @@ from flask_cors import CORS
 # 1. IMPORTANDO SUA LÓGICA
 # ===================================================================
 # Assumindo que seu código está em um arquivo 'seu_tradutor.py'
-# e tem uma função principal chamada 'traduzir_nl_para_cpc'
+# e tem uma função principal chamada  traduzir_para_cpc'
 #
 # Se o nome do arquivo ou da função for diferente, ajuste aqui.
 try:
-    from agente_cpc import traduzir_nl_para_cpc
+    from agente_cpc import traduzir_para_cpc
 except ImportError:
-    print("AVISO: Não foi possível importar 'traduzir_nl_para_cpc' de 'seu_tradutor.py'.")
+    print("AVISO: Não foi possível importar  traduzir_para_cpc' de 'seu_tradutor.py'.")
     # Definindo uma função placeholder para o servidor rodar mesmo assim
-    def traduzir_nl_para_cpc(texto):
+    def traduzir_para_cpc(texto):
         return f"Erro: Logica de 'seu_tradutor.py' não encontrada. Input recebido: {texto}"
 # ===================================================================
 
@@ -39,7 +39,7 @@ def handle_translation():
         # 2. USANDO SUA LÓGICA
         # ===================================================================
         # Aqui chamamos a sua função que faz o trabalho pesado
-        resultado_cpc = traduzir_nl_para_cpc(frase_nl)
+        resultado_cpc = traduzir_para_cpc(frase_nl)
         # ===================================================================
 
         # Devolve o resultado como JSON para o frontend

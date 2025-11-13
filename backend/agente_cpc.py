@@ -1,5 +1,9 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS # Para permitir a comunicação
+
 import os
 import sys
 import json
@@ -249,7 +253,31 @@ def traduzir_para_cpc(texto_entrada: str):
         traceback.print_exc()
 
 # --- Ponto de Entrada do Script ---
-if __name__ == "__main__":
-    frase = input("Digite a frase para traduzir para CPC (ou 's' para sair):\n> ")
-    if frase.lower() != 's':
-        traduzir_para_cpc(frase)
+app = Flask(__name__)
+CORS(app) # Permite que seu frontend chame esta API
+
+@app.route('/api/traduzir-nl-cpc', methods=['POST'])
+def handle_nl_to_cpc():
+    try:
+        data = request.json
+        texto_entrada = data.get('input_text')
+        
+        if not texto_entrada:
+            return jsonify({"erro": "Nenhum texto fornecido"}), 400
+
+        # --- AQUI VOCÊ CHAMA SEU AGENTE ---
+        # (Adaptei sua função 'traduzir_para_cpc' para retornar um dict em vez de imprimir)
+        resultado = traduzir_para_cpc(texto_entrada) 
+        # (Seu traduzir_para_cpc precisaria ser modificado para retornar o JSON)
+        # ---
+        
+        return jsonify(resultado)
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+# (Você precisaria de OUTRA rota, ex: /api/gerar-cpc-nl, 
+# para lidar com a outra função do seu app)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000) # Roda o servidor na porta 5000
