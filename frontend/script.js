@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para chamar seu agente NL -> CPC
     async function chamarApiNlCpc(data) {
-        const API_URL = 'http://127.0.0.1:5000/api/traduzir-nl-cpc';
+        const API_URL = 'https://projeto-nl-cpc.onrender.com/api/traduzir-nl-cpc';
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para chamar o agente CPC -> NL
     async function chamarApiCpcNl(data) {
-        const API_URL = 'http://127.0.0.1:5000/api/gerar-cpc-nl'; 
+        const API_URL = 'https://projeto-nl-cpc.onrender.com/api/traduzir-nl-cpc'; 
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
