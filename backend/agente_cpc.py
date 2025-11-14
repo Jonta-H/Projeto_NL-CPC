@@ -16,10 +16,10 @@ from logic_builder import construir_formula, formatar_para_cpc
 
 # Carrega o modelo spaCy para análise de negação
 try:
-    nlp_negation = spacy.load("pt_core_news_lg", disable=["ner", "textcat"])
+    nlp_negation = spacy.load("pt_core_news_sm", disable=["ner", "textcat"])
 except IOError:
-    print("ERRO: Modelo 'pt_core_news_lg' não encontrado.")
-    print("Execute: python -m spacy download pt_core_news_lg")
+    print("ERRO: Modelo 'pt_core_news_sm' não encontrado.")
+    print("Execute: python -m spacy download pt_core_news_sm")
     sys.exit(1)
 
 # 🧩 Carrega variáveis do .env

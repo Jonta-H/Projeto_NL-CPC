@@ -2,10 +2,10 @@ import spacy
 from spacy.matcher import Matcher
 
 try:
-    nlp = spacy.load("pt_core_news_lg", disable=["ner", "textcat"])
+    nlp = spacy.load("pt_core_news_sm", disable=["ner", "textcat"])
 except IOError:
-    print("ERRO: Modelo 'pt_core_news_lg' não encontrado.")
-    print("Execute: python -m spacy download pt_core_news_lg")
+    print("ERRO: Modelo 'pt_core_news_sm' não encontrado.")
+    print("Execute: python -m spacy download pt_core_news_sm")
     exit(1)
 
 # --- MUDANÇA AQUI ---
