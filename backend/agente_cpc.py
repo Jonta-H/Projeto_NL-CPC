@@ -1,13 +1,14 @@
+# [ INÍCIO de agente_cpc.py ]
+
 from openai import OpenAI
 from dotenv import load_dotenv
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS # Para permitir a comunicação
-
+# Removidas as importações do Flask
 import os
 import sys
 import json
 import spacy 
+import re
 
 # Importa nossos módulos locais
 from spacy_extractor import extrair_componentes
@@ -21,7 +22,6 @@ except IOError:
     print("Execute: python -m spacy download pt_core_news_lg")
     sys.exit(1)
 
-
 # 🧩 Carrega variáveis do .env
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -30,13 +30,17 @@ if not GROQ_API_KEY:
     print("❌ ERRO: A variável GROQ_API_KEY não foi encontrada.")
     sys.exit(1)
 
-# ⚙️ Configurar cliente Groq (vamos defini-lo como global para a recursão)
+# ⚙️ Configurar cliente Groq
 client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=GROQ_API_KEY
 )
 
-# --- Funções para ajudar a LLM ---
+# --- Funções de ajuda (analisar_proposicao, determinar_operador_principal, etc.) ---
+# ... (Mantenha todas as suas funções de ajuda que já estão aqui) ...
+# ... (analisar_proposicao, determinar_operador_principal, criar_prompt_otimizado) ...
+
+# (Vou colar as suas funções de ajuda aqui para garantir)
 
 def analisar_proposicao(texto_bruto: str) -> dict:
     """Caso base: analisa um texto em busca de negação."""
@@ -60,12 +64,12 @@ def analisar_proposicao(texto_bruto: str) -> dict:
 def determinar_operador_principal(conectivos: list) -> str:
     """Decide o operador principal com base na prioridade."""
     prioridade = {
-        "NEGACAO_ESCOPO": 5,  # Prioridade mais alta
+        "NEGACAO_ESCOPO": 5,
         "BIIMPLICACAO": 4,
         "CONDICIONAL": 3,
         "CONJUNCAO": 2,
         "DISJUNCAO": 1,
-        "NEGACAO_SIMPLES": 0  # Prioridade mais baixa (será ignorada)
+        "NEGACAO_SIMPLES": 0
     }
     operador_principal_str = "None"
     max_prioridade = -1
@@ -82,7 +86,6 @@ def determinar_operador_principal(conectivos: list) -> str:
             elif tipo == "DISJUNCAO": operador_principal_str = "Or"
             elif tipo == "NEGACAO_ESCOPO": operador_principal_str = "Not" 
     
-        
     return operador_principal_str
 
 def criar_prompt_otimizado(texto_original: str, operador_principal_py: str) -> str:
@@ -141,7 +144,6 @@ def criar_prompt_otimizado(texto_original: str, operador_principal_py: str) -> s
     
     return prompt
 
-
 # --- FUNÇÃO RECURSIVA ---
 def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_letra_pool: list) -> str:
     """
@@ -159,23 +161,21 @@ def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_
     
     # --- CASO BASE: É uma proposição atômica (ou sua negação) ---
     if operador == "None":
-        # Usamos o analisador de negação (para "não P" que não foi pego antes)
         obj_logico = analisar_proposicao(texto_bruto)
-        
-        # Pega uma nova letra (P, Q, R...)
         if not var_letra_pool: raise Exception("Pool de variáveis esgotado!")
         var_letra = var_letra_pool.pop(0) 
-        
         definicoes_globais[var_letra] = obj_logico["texto_base"]
         return f"Not({var_letra})" if obj_logico["negado"] else var_letra
 
     # --- PASSO RECURSIVO: É uma proposição composta ---
     
     # 3. Pede ao LLM para dividir as partes
-    prompt = criar_prompt_otimizado(componentes, operador)
+    prompt = criar_prompt_otimizado(componentes, operador) # ERRO AQUI: componentes é um dict, não a string
+    # CORREÇÃO:
+    prompt = criar_prompt_otimizado(texto_bruto, operador)
     
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         max_tokens=300,
@@ -206,78 +206,248 @@ def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_
         return f"{operador}({vars_str})"
     
     elif operador == "Not":
-        # Este caso lida com "É falso que (P e Q)"
-        # O LLM extrai "P e Q". Nós chamamos a recursão nisso.
         sub_texto = dados_extraidos.get("proposicao_negada")
         str_sub = construir_formula_recursiva(sub_texto, definicoes_globais, var_letra_pool)
         return f"Not({str_sub})"
     
     raise Exception(f"Operador desconhecido na recursão: {operador}")
 
-
-# --- FUNÇÃO PRINCIPAL ---
+# --- FUNÇÃO PRINCIPAL (NL -> CPC) ---
 def traduzir_para_cpc(texto_entrada: str):
-    print(f"💬 Texto Original: {texto_entrada}")
+    print(f"💬 NL->CPC Recebido: {texto_entrada}")
     
-    # Pool de variáveis P, Q, R, S...
     var_letra_pool = [chr(i) for i in range(80, 91)] # P até Z
     definicoes_globais = {}
     
     try:
-        # --- PASSO 1: Inicia a recursão ---
         print("\n🐍 Iniciando parser recursivo...")
         formula_str = construir_formula_recursiva(texto_entrada, definicoes_globais, var_letra_pool)
         
-        # --- PASSO 2: Construção com SymPy ---
         print("\n📐 Validando e construindo com SymPy...")
         formula_objeto = construir_formula(formula_str, definicoes_globais)
         
         if formula_objeto is not None:
-            # --- PASSO 3: Formatação para Notação CPC ---
             print("\n🎨 Formatando para notação CPC padrão...")
             formula_cpc_str = formatar_para_cpc(formula_objeto)
 
             print("\n--- ✅ SUCESSO! ---")
-            print("\nDefinições Proposicionais:")
-            for var, definicao in definicoes_globais.items():
-                print(f"  {var}: {definicao}")
             
-            print(f"\nFórmula (SymPy): {formula_str}")
-            print(f"Fórmula (Objeto): {formula_objeto}")
-            print("\n✨ Fórmula (Notação CPC):")
-            print(f"   {formula_cpc_str}")
+            definicoes_formatadas = [{"var": var, "def": definicao} 
+                                     for var, definicao in definicoes_globais.items()]
+
+            # --- MUDANÇA PRINCIPAL: RETORNAR O DICIONÁRIO ---
+            return {
+                "success": True,
+                "cpc_string": formula_cpc_str,
+                "definitions": definicoes_formatadas,
+                "sympy_string": formula_str
+            }
+        
+        else:
+            raise Exception("Falha ao construir o objeto SymPy.")
 
     except Exception as e:
         print(f"\n❌ ERRO GERAL: {e}")
         import traceback
         traceback.print_exc()
+        
+        # --- MUDANÇA IMPORTANTE: RETORNAR O ERRO ---
+        return {"success": False, "error": str(e)}
 
-# --- Ponto de Entrada do Script ---
-app = Flask(__name__)
-CORS(app) # Permite que seu frontend chame esta API
+def _parsear_glossario(glossary_str: str) -> dict:
+    """
+    Helper para converter o texto do glossário (multi-linha OU 
+    linha-única-com-vírgulas) em um dicionário.
+    """
+    glossario = {}
+    if not glossary_str:
+        return glossario
 
-@app.route('/api/traduzir-nl-cpc', methods=['POST'])
-def handle_nl_to_cpc():
+    entradas = []
+    texto_limpo = glossary_str.strip()
+
+    # Regex para quebrar a string.
+    # Ele quebra por uma vírgula (,)
+    # que é seguida por qualquer letra (P, Q, p, q...) e dois-pontos (:)
+    # Isso evita quebrar em vírgulas DENTRO de uma definição (ex: P: Chove, e faz frio)
+    padrao_split = r',\s*(?=[A-Za-z]:)'
+    
+    # Verifica se é um input de linha única (como o placeholder)
+    if '\n' not in texto_limpo and re.search(padrao_split, texto_limpo):
+        # É linha única, quebra usando o regex
+        entradas = re.split(padrao_split, texto_limpo)
+    else:
+        # É multi-linha (ou uma única entrada), quebra por linha
+        entradas = texto_limpo.split('\n')
+
+    # O resto da lógica é o mesmo
+    for item in entradas:
+        partes = item.strip().split(':', 1) # Divide apenas no primeiro ':'
+        if len(partes) == 2:
+            var = partes[0].strip().upper() # Garante 'P', 'Q', etc.
+            definicao = partes[1].strip()
+            if var:
+                glossario[var] = definicao
+    return glossario
+
+# --- NOVA FUNÇÃO PLACEHOLDER (CPC -> NL) ---
+def traduzir_para_nl(data: dict):
+    """
+    Função principal para a tradução CPC -> NL.
+    'data' contém: {'input_text', 'generation_mode', 'glossary'}
+    """
+    print(f"💬 CPC->NL Recebido: {data}")
+    
     try:
-        data = request.json
-        texto_entrada = data.get('input_text')
-        
-        if not texto_entrada:
-            return jsonify({"erro": "Nenhum texto fornecido"}), 400
+        # Pega a fórmula "bruta" do usuário
+        cpc_formula = data.get('input_text')
+        mode = data.get('generation_mode')
+        glossary_str = data.get('glossary')
 
-        # --- AQUI VOCÊ CHAMA SEU AGENTE ---
-        # (Adaptei sua função 'traduzir_para_cpc' para retornar um dict em vez de imprimir)
-        resultado = traduzir_para_cpc(texto_entrada) 
-        # (Seu traduzir_para_cpc precisaria ser modificado para retornar o JSON)
-        # ---
+        if not cpc_formula:
+            raise ValueError("Nenhuma fórmula CPC fornecida.")
+
+        # --- NOVO BLOCO DE NORMALIZAÇÃO ---
+        print(f"   [CPC->NL] Normalizando fórmula de entrada: '{cpc_formula}'")
         
-        return jsonify(resultado)
+        # Substitui "e" (como palavra inteira) por "^"
+        # O re.IGNORECASE pega 'e', 'E', 'eU', etc.
+        # O \b significa "word boundary" (limite da palavra)
+        cpc_formula_normalizada = re.sub(r'\be\b', '^', cpc_formula, flags=re.IGNORECASE)
+        
+        # Substitui "ou" (como palavra inteira) por "v"
+        cpc_formula_normalizada = re.sub(r'\bou\b', 'v', cpc_formula_normalizada, flags=re.IGNORECASE)
+        
+        print(f"   [CPC->NL] Fórmula normalizada: '{cpc_formula_normalizada}'")
+        # --- FIM DO NOVO BLOCO ---
+
+
+        # 1. Encontrar todos os átomos (usando a fórmula normalizada)
+        
+        # Encontra todas as letras MAIÚSCULAS
+        atomos_maiusculos = set(re.findall(r'\b([A-Z])\b', cpc_formula_normalizada))
+        
+        # Encontra todas as letras MINÚSCULAS
+        atomos_minusculos = set(re.findall(r'\b([a-z])\b', cpc_formula_normalizada))
+        
+        # Define os operadores minúsculos conhecidos
+        operadores_minusculos = {'v'} # 'v' de "ou" que acabamos de adicionar
+        
+        # Filtra os operadores
+        atomos_minusculos_filtrados = atomos_minusculos - operadores_minusculos
+        
+        # Converte os átomos minúsculos restantes para maiúsculo
+        atomos_minusculos_upper = {letra.upper() for letra in atomos_minusculos_filtrados}
+        
+        # Junta tudo
+        atomos_finais = atomos_maiusculos.union(atomos_minusculos_upper)
+        
+        if not atomos_finais:
+            raise ValueError("Nenhuma variável proposicional (P, Q, etc.) encontrada na fórmula.")
+        
+        atomos = sorted(list(atomos_finais))
+        print(f"   [CPC->NL] Átomos encontrados: {atomos}")
+
+        glossario_final = {}
+
+        # 2. Construir o glossário (lógica permanece a mesma)
+        if mode == 'manual':
+            print("   [CPC->NL] Modo Manual: Analisando glossário...")
+            glossario_final = _parsear_glossario(glossary_str)
+            
+            for atomo in atomos:
+                if atomo not in glossario_final:
+                    raise ValueError(f"Glossário manual incompleto. Definição para '{atomo}' não encontrada.")
+
+        elif mode == 'auto':
+            # ... (Lógica do modo auto permanece a mesma) ...
+            print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
+            prompt_glossario = f"""
+                Crie um glossário em português para as seguintes variáveis: {', '.join(atomos)}.
+                As definições devem ser frases afirmativas simples.
+                Responda APENAS com o objeto JSON no formato exato: {{"P": "...", "Q": "..."}}.
+
+                Exemplo de Saída (para P, Q):
+                {{"P": "Está chovendo", "Q": "O chão está molhado"}}
+
+                Sua Tarefa (APENAS JSON):
+                """
+            
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt_glossario}],
+                temperature=0.7,
+                response_format={"type": "json_object"}
+            )
+            glossario_final = json.loads(response.choices[0].message.content)
+
+        # 3. Gerar a Frase Final (usando a fórmula normalizada)
+        print("   [CPC->NL] Gerando frase final...")
+        
+        glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
+        
+        # PROMPT FINAL ATUALIZADO (com exemplos explícitos)
+        prompt_final = f"""
+        Traduza a fórmula lógica para uma frase fluida em português, usando o glossário.
+        Siga o padrão dos exemplos abaixo.
+
+        ---
+        **Exemplo 1: Negação Atômica**
+        Fórmula: ¬P
+        Glossário: P: O gato está dormindo
+        Frase Resultante: O gato não está dormindo.
+        ---
+        **Exemplo 2: Negação de Escopo**
+        Fórmula: ¬(P ^ Q)
+        Glossário: P: O gato está dormindo, Q: O cachorro está latindo
+        Frase Resultante: Não é verdade que o gato está dormindo e o cachorro está latindo.
+        ---
+        **Exemplo 3: Negação Atômica (em contexto)**
+        Fórmula: P -> ¬Q
+        Glossário: P: Chove, Q: O sol brilha
+        Frase Resultante: Se chove, então o sol não brilha.
+        ---
+
+        **REGRAS ESTRITAS PARA SUA TAREFA:**
+        1.  **Siga o estilo dos exemplos:** Negação atômica (¬P) deve ser natural (ex: "não está"). Negação de escopo (¬(...)) deve ser "Não é verdade que...".
+        2.  Use conectivos naturais (e, ou, se... então).
+        3.  **NÃO** explique seu processo.
+        4.  **NÃO** mencione as palavras "fórmula", "glossário", "exemplo" ou "tradução".
+        5.  Responda **APENAS** com a frase resultante.
+
+        **Sua Tarefa:**
+
+        **Fórmula:**
+        {cpc_formula_normalizada}
+
+        **Glossário:**
+        {glossario_prompt_str}
+
+        **Frase Resultante:**
+        """
+        
+        response_final = client.chat.completions.create(
+            # (o resto da chamada da API permanece o mesmo)
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt_final}],
+            temperature=0.2,
+            max_tokens=500
+        )
+        
+        frase_gerada = response_final.choices[0].message.content.strip()
+        
+        print("   [CPC->NL] Sucesso!")
+        
+        return {
+            "success": True,
+            "natural_language_output": frase_gerada,
+            "glossary_used": glossario_final
+        }
 
     except Exception as e:
-        return jsonify({"erro": str(e)}), 500
+        print(f"\n❌ ERRO GERAL (CPC->NL): {e}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e), "glossary_used": {}}
 
-# (Você precisaria de OUTRA rota, ex: /api/gerar-cpc-nl, 
-# para lidar com a outra função do seu app)
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000) # Roda o servidor na porta 5000
+# [ FIM de agente_cpc.py ]

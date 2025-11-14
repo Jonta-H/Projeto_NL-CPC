@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <a href="https://github.com/seu-usuario/seu-repositorio" target="_blank" class="github-icon">
+    <a href="https://github.com/Jonta-H/Projeto_NL-CPC" target="_blank" class="github-icon">
         <i class="fa-brands fa-github"></i>
     </a>
 
@@ -34,20 +34,16 @@
                 <div class="toggle-group" id="generation-toggle">
                     <input type="radio" id="gen-auto" name="generation-mode" value="auto" checked>
                     <label for="gen-auto">Automática</label>
-
                     <input type="radio" id="gen-manual" name="generation-mode" value="manual">
                     <label for="gen-manual">Glossário</label>
                 </div>
-
                 <p id="description-auto" class="generation-description">
                     A inteligência artificial irá criar um exemplo completo do zero, definindo o significado de cada átomo e montando a frase.
                 </p>
                 <p id="description-manual" class="generation-description">
                     Você fornecerá o significado de cada átomo (p, q, r, etc.), e a IA irá montar a frase lógica.
                 </p>
-
                 <textarea id="glossary-input" placeholder="Defina seu glossário aqui... (Ex: p: O sol está quente)"></textarea>
-
             </div>
 
             <button id="action-button" class="action-button">
@@ -55,11 +51,27 @@
                 <span id="button-text">Traduzir</span>
             </button>
 
+            <div id="main-response-container" class="main-response-container">
+                <pre id="main-response-output"></pre>
+            </div>
+
         </div>
         
-        <div id="response-area" class="response-area">
+        <div id="details-area" class="details-area">
+            
             <div id="loader" class="loader"></div>
-            <pre id="response-output"></pre>
+            
+            <div id="details-wrapper" style="display: none; width: 100%;">
+            
+                <button id="toggle-details-button" class="details-button">
+                    <span id="details-button-text">Ver processo</span>
+                    <i id="details-button-icon" class="fa-solid fa-chevron-down"></i>
+                </button>
+    
+                <div id="details-content" class="details-content">
+                    <pre id="details-output"></pre> </div>
+
+            </div>
         </div>
 
     </div>

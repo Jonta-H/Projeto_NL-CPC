@@ -5,3 +5,4 @@ spacy
 sympy
 Flask
 Flask-CORS
+gunicorn

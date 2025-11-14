@@ -58,7 +58,7 @@ h1 {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* (MUDOU) Reduzido para diminuir espaços vazios */
+    gap: 15px;
 }
 
 /* --- Toggles (Controle Segmentado) --- */
@@ -69,11 +69,7 @@ h1 {
     overflow: hidden;
     border: 1px solid #565869;
 }
-
-.toggle-group input[type="radio"] {
-    display: none;
-}
-
+.toggle-group input[type="radio"] { display: none; }
 .toggle-group label {
     flex: 1;
     text-align: center;
@@ -89,40 +85,43 @@ h1 {
     justify-content: center;
     gap: 8px;
 }
-
 .toggle-group input[type="radio"]:checked + label {
     background-color: #565869;
     color: #ffffff;
     font-weight: 600;
 }
-
 .toggle-group label:not(:last-child) {
     border-right: 1px solid #565869;
 }
 
-/* --- Caixa de Entrada de Texto --- */
-#user-input {
+/* --- Caixas de Entrada de Texto (user-input e glossary-input) --- */
+#user-input,
+#glossary-input {
     width: 100%;
-    min-height: 60px; /* (MUDOU) Altura mínima reduzida */
     background-color: #343541;
     border: 1px solid #565869;
     border-radius: 8px;
     padding: 15px;
     font-size: 1rem;
     color: #ececf1;
-    resize: vertical;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow-y: hidden; /* Para auto-expansão */
 }
-#user-input::placeholder {
+#user-input { min-height: 60px; }
+#glossary-input { min-height: 40px; font-size: 0.9rem; padding: 10px; }
+
+#user-input::placeholder,
+#glossary-input::placeholder {
     color: #8e8ea0;
 }
-#user-input:focus {
+#user-input:focus,
+#glossary-input:focus {
     border-color: #10a37f;
     box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.3);
 }
 
-/* --- Opções de Geração (Toggle 2) Container --- */
+/* --- Opções de Geração (Container) --- */
 .generation-options-container {
     opacity: 0;
     max-height: 0;
@@ -131,7 +130,7 @@ h1 {
     transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* (MUDOU) Reduzido para diminuir espaços vazios */
+    gap: 10px;
     padding-top: 10px;
     border-top: 1px dashed #565869;
 }
@@ -140,69 +139,38 @@ h1 {
     max-height: 500px;
     transform: translateY(0);
 }
-
 .section-label {
     font-size: 0.9rem;
     color: #8e8ea0;
     font-weight: 500;
     text-align: center;
 }
-
-/* --- Descrições Dinâmicas --- */
 .generation-description {
     font-size: 0.85rem;
     color: #8e8ea0;
     text-align: center;
     line-height: 1.5;
     margin-top: -5px;
-    /* (MUDOU) JS controla com display */
     display: none; 
 }
-.generation-description.show {
-    /* (MUDOU) JS agora usa esta classe para mostrar */
-    display: block; 
-}
-.generation-description b {
-    color: #ffffff;
-    font-weight: 600;
-}
+.generation-description b { color: #ffffff; font-weight: 600; }
 
-/* --- Caixa de Entrada do Glossário --- */
+/* --- Caixa de Glossário (Animação) --- */
 #glossary-input {
-    width: 100%;
-    min-height: 40px; /* (MUDOU) Altura mínima reduzida */
-    background-color: #343541;
-    border: 1px solid #565869;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 0.9rem;
-    color: #ececf1;
-    resize: vertical;
-    outline: none;
-    
-    /* (MUDOU) Lógica de fade-in restaurada */
     opacity: 0;
     max-height: 0;
     overflow: hidden;
     transform: translateY(-5px);
     transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease, margin-top 0.3s ease;
 }
-#glossary-input::placeholder {
-    color: #8e8ea0;
-}
-#glossary-input:focus {
-    border-color: #10a37f;
-    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.3);
-}
 #glossary-input.show {
-    /* (MUDOU) Classe que o JS usa para mostrar */
     opacity: 1;
-    max-height: 150px; /* Altura máxima para animação */
+    max-height: 500px; 
     transform: translateY(0);
-    margin-top: 5px; /* Espaço quando visível */
+    margin-top: 5px;
 }
 
-/* --- Botão de Ação (Traduzir/Gerar) --- */
+/* --- Botão de Ação --- */
 .action-button {
     width: 100%;
     padding: 15px;
@@ -218,50 +186,72 @@ h1 {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    margin-top: 5px; /* (NOVO) Adiciona espaço acima do botão */
+    margin-top: 5px;
 }
-.action-button:hover {
-    background-color: #0f9272;
-    transform: translateY(-2px);
+.action-button:hover { background-color: #0f9272; transform: translateY(-2px); }
+.action-button:active { transform: translateY(0); }
+
+
+/* ====================================================== */
+/* (NOVOS ESTILOS) PARA RESPOSTA PRINCIPAL (DENTRO DO BLOCO) */
+/* ====================================================== */
+.main-response-container {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease, margin-top 0.3s ease;
 }
-.action-button:active {
-    transform: translateY(0);
+.main-response-container.show {
+    opacity: 1;
+    max-height: 500px;
+    margin-top: 15px; /* Espaço acima da resposta */
+}
+#main-response-output {
+    width: 100%;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ececf1;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: center;
+    padding: 15px;
+    background-color: #343541; /* Cor de fundo mais escura */
+    border-radius: 8px;
+    border: 1px solid #565869;
+}
+/* (NOVO) Estilo de erro para a caixa de resposta principal */
+#main-response-output.error {
+    color: #f77; /* Cor vermelha para erro */
+    font-size: 1rem;
+    font-weight: 500;
 }
 
-/* --- Área de Resposta --- */
-.response-area {
+.details-area { /* <-- RENOMEADO (antiga .response-area) */
     width: 100%;
     background-color: #40414f;
     border: 1px solid #565869;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-    transform: translateY(20px);
-    transition: opacity 0.4s ease, max-height 0.4s ease, transform 0.4s ease;
+    
+    /* (MUDADO) Lógica de 'show' agora é só para o container */
+    display: none; /* Começa escondido */
+    
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 80px;
-}
-.response-area.show {
-    opacity: 1;
-    max-height: 500px;
-    transform: translateY(0);
+    flex-direction: column;
     padding: 25px;
+    
+    /* (NOVO) Transição suave para o aparecimento */
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
-
-#response-output {
-    width: 100%;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    font-size: 0.95rem;
-    color: #ececf1;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    overflow-x: auto;
-    display: none; 
+.details-area.show { /* <-- (NOVO) JS usará isso para mostrar a caixa */
+    display: flex;
+    opacity: 1;
 }
 
 /* --- Spinner de Carregamento --- */
@@ -278,28 +268,72 @@ h1 {
     to { transform: rotate(360deg); }
 }
 
-/* --- Media Queries para Responsividade --- */
+/* Wrapper para o conteúdo (botão + detalhes) */
+#details-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* --- Botão "Ver Processo" --- */
+.details-button {
+    background: none;
+    border: 1px solid #565869;
+    color: #8e8ea0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: none; /* (JS vai mostrar) */
+    align-items: center;
+    gap: 8px;
+}
+.details-button:hover {
+    background-color: #565869;
+    color: #ececf1;
+}
+.details-button i {
+    transition: transform 0.3s ease;
+}
+.details-button.open i {
+    transform: rotate(180deg);
+}
+
+/* --- Área de Detalhes Colapsável --- */
+.details-content {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease, margin-top 0.3s ease;
+    width: 100%;
+}
+.details-content.show {
+    opacity: 1;
+    max-height: 500px;
+    margin-top: 20px;
+}
+
+/* --- JSON dos Detalhes --- */
+#details-output {
+    width: 100%;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    color: #b4b4c0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: #343541;
+    border: 1px solid #565869;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+/* --- Media Queries --- */
 @media (max-width: 768px) {
-    h1 {
-        font-size: 2rem;
-    }
-    .github-icon {
-        font-size: 2rem;
-        top: 15px;
-        right: 15px;
-    }
-    .interaction-block, .response-area {
-        padding: 20px;
-    }
-    .toggle-group label {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-    }
-    .action-button {
-        font-size: 1rem;
-        padding: 12px;
-    }
-    .main-container {
-        padding: 10px;
-    }
+    h1 { font-size: 2rem; }
+    .github-icon { font-size: 2rem; top: 15px; right: 15px; }
+    .interaction-block, .details-area { padding: 20px; }
+    #main-response-output { font-size: 1.15rem; }
 }
