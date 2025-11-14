@@ -63,14 +63,22 @@ def analisar_proposicao(texto_bruto: str) -> dict:
 
 def determinar_operador_principal(conectivos: list) -> str:
     """Decide o operador principal com base na prioridade."""
+    
+    # --- PRIORIDADES CORRIGIDAS ---
+    # "ou" (Disjunção) agora tem prioridade 2
+    # "e" (Conjunção) agora tem prioridade 1
+    # Isso garante que "ou" seja escolhido como o operador principal
+    # em frases ambíguas como "P ou Q e R".
     prioridade = {
-        "NEGACAO_ESCOPO": 5,
+        "NEGACAO_ESCOPO": 5,  # Prioridade mais alta (escopo)
         "BIIMPLICACAO": 4,
         "CONDICIONAL": 3,
-        "CONJUNCAO": 2,
-        "DISJUNCAO": 1,
+        "DISJUNCAO": 2,     # <-- MUDADO DE 1
+        "CONJUNCAO": 1,     # <-- MUDADO DE 2
         "NEGACAO_SIMPLES": 0
     }
+    # --- FIM DA CORREÇÃO ---
+    
     operador_principal_str = "None"
     max_prioridade = -1
 
