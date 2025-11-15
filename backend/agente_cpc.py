@@ -9,7 +9,7 @@ import sys
 import json
 import spacy 
 import re
-import logging
+import traceback
 
 # Importa nossos módulos locais
 from spacy_extractor import extrair_componentes
@@ -256,8 +256,8 @@ def traduzir_para_cpc(texto_entrada: str):
             raise Exception("Falha ao construir o objeto SymPy.")
 
     except Exception as e:
-        # Esta linha registra o traceback COMPLETO no log do Render
-        logging.exception("Erro ao executar traduzir_para_cpc") 
+        print("--- ERRO EM traduzir_para_cpc ---")
+        print(traceback.format_exc())
         return {"success": False, "error": str(e)}
 
 def _parsear_glossario(glossary_str: str) -> dict:
@@ -371,9 +371,8 @@ def traduzir_para_nl(data: dict):
                 glossario_final = json.loads(llm_response_str)
                 print(f"   [CPC->NL] Glossário gerado: {glossario_final}")
             except json.JSONDecodeError:
-                # Se falhar, registamos EXATAMENTE o que o LLM enviou de errado
-                logging.error(f"FALHA AO PARSEAR JSON DO GLOSSÁRIO. Resposta do LLM: '{llm_response_str}'")
-                # E lançamos um erro claro
+                print("--- ERRO DE JSON (traduzir_para_nl) ---")
+                print(f"Resposta inválida do LLM (não é JSON): '{llm_response_str}'")
                 raise ValueError("LLM falhou ao gerar um glossário JSON válido.")
             # --- FIM DO NOVO BLOCO ---
 
@@ -443,8 +442,8 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
-        # AQUI É ONDE O ERRO REAL APARECERÁ NO RENDER
-        logging.exception("Erro ao executar traduzir_para_nl") 
+        print("--- ERRO GERAL EM traduzir_para_nl ---")
+        print(traceback.format_exc()) # Força o traceback para o log
         return {"success": False, "error": str(e), "glossary_used": {}}
 
 # [ FIM de agente_cpc.py ]
