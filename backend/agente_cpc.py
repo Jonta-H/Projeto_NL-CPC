@@ -348,19 +348,14 @@ def traduzir_para_nl(data: dict):
         elif mode == 'auto':
             print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
             
-            # --- CORREÇÃO DO PROMPT DO GLOSSÁRIO ---
             prompt_glossario = f"""
-            Crie um glossário em português para as seguintes variáveis proposicionais: {', '.join(atomos)}.
-            As definições devem ser frases afirmativas simples.
+            Sua tarefa é gerar um objeto JSON.
+            O objeto deve ser um glossário em português para as seguintes variáveis lógicas: {', '.join(atomos)}.
+            As chaves do JSON devem ser as variáveis (em maiúsculas).
+            Os valores do JSON devem ser frases afirmativas curtas (ex: "O sol brilha").
             
-            Responda APENAS com um objeto JSON. As chaves devem ser as variáveis (em maiúsculas) e os valores devem ser as definições.
-
-            Exemplo de Formato (para X, Y):
-            {{"X": "Definição para X", "Y": "Definição para Y"}}
-
-            Sua Tarefa (APENAS JSON para {', '.join(atomos)}):
+            Responda APENAS com o objeto JSON, sem nenhum texto extra.
             """
-            # --- FIM DA CORREÇÃO ---
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -368,14 +363,27 @@ def traduzir_para_nl(data: dict):
                 temperature=0.7,
                 response_format={"type": "json_object"}
             )
-            glossario_final = json.loads(response.choices[0].message.content)
+            
+            llm_response_str = response.choices[0].message.content
+            
+            # --- NOVO BLOCO DE VERIFICAÇÃO DEFENSIVA ---
+            try:
+                glossario_final = json.loads(llm_response_str)
+                print(f"   [CPC->NL] Glossário gerado: {glossario_final}")
+            except json.JSONDecodeError:
+                # Se falhar, registamos EXATAMENTE o que o LLM enviou de errado
+                logging.error(f"FALHA AO PARSEAR JSON DO GLOSSÁRIO. Resposta do LLM: '{llm_response_str}'")
+                # E lançamos um erro claro
+                raise ValueError("LLM falhou ao gerar um glossário JSON válido.")
+            # --- FIM DO NOVO BLOCO ---
 
         # 3. Gerar a Frase Final
+        # ... (O resto da função "Gerar a Frase Final" permanece exatamente o mesmo) ...
+        
         print("   [CPC->NL] Gerando frase final...")
         
         glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
         
-        # --- CORREÇÃO DO .UPPER() ---
         formula_para_prompt = cpc_formula_normalizada.upper()
         
         prompt_final = f"""
@@ -435,7 +443,8 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
-        logging.exception("Erro ao executar traduzir_para_nl")
+        # AQUI É ONDE O ERRO REAL APARECERÁ NO RENDER
+        logging.exception("Erro ao executar traduzir_para_nl") 
         return {"success": False, "error": str(e), "glossary_used": {}}
 
 # [ FIM de agente_cpc.py ]
