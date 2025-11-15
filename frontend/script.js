@@ -42,24 +42,19 @@ document.addEventListener('DOMContentLoaded', () => {
         glossaryInput.classList.toggle('show', selectedGenMode === 'manual');
     }
 
-    // (LÓGICA RESTAURADA AQUI)
     function updateUIMode() {
         const selectedMode = document.querySelector('input[name="translation-mode"]:checked').value;
         userInput.placeholder = placeholders[selectedMode];
         buttonText.textContent = buttonLabels[selectedMode];
         resetResponseUI(); // Reseta a UI ao trocar de modo
         
-        // --- LÓGICA RESTAURADA ---
-        // Mostra ou esconde as opções de geração (Automático/Glossário)
         if (selectedMode === 'cpc-nl') {
             generationOptionsContainer.classList.add('show');
             updateGenerationModeUI(); // Atualiza o estado interno (auto/manual)
         } else {
             generationOptionsContainer.classList.remove('show');
-            // Garante que a caixa de glossário também suma
             glossaryInput.classList.remove('show');
         }
-        // --- FIM DA LÓGICA RESTAURADA ---
     }
 
     // Função de Reset da Resposta
@@ -79,9 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
-
     functionRadios.forEach(radio => radio.addEventListener('change', updateUIMode));
-    // (LISTENER RESTAURADO)
     generationRadios.forEach(radio => radio.addEventListener('change', updateGenerationModeUI));
 
     // Listeners para os inputs (auto-expansão e reset)
@@ -105,11 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const selectedMode = document.querySelector('input[name="translation-mode"]:checked').value;
-        
-        // (LÓGICA RESTAURADA)
         const selectedGenMode = (selectedMode === 'cpc-nl') ? 
                                 document.querySelector('input[name="generation-mode"]:checked').value : null;
-        
         const glossaryValue = (selectedGenMode === 'manual') ? glossaryInput.value.trim() : null;
 
         if (selectedGenMode === 'manual' && !glossaryValue) {
@@ -124,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dataToSend = {
             input_text: textInput,
-            generation_mode: selectedGenMode, // (Variável restaurada)
-            glossary: glossaryValue           // (Variável restaurada)
+            generation_mode: selectedGenMode,
+            glossary: glossaryValue
         };
 
         try {
@@ -206,7 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para chamar o agente CPC -> NL
     async function chamarApiCpcNl(data) {
-        const API_URL = 'https://projeto-nl-cpc.onrender.com/api/traduzir-nl-cpc'; 
+        
+        // --- A CORREÇÃO ESTÁ AQUI ---
+        // O URL estava errado (apontava para 'traduzir-nl-cpc')
+        const API_URL = 'https://projeto-nl-cpc.onrender.com/api/gerar-cpc-nl'; 
+        // --- FIM DA CORREÇÃO ---
+
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
