@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateGenerationModeUI() {
         // --- LIMPEZA ADICIONADA (Trigger 2) ---
         // Limpa apenas o glossário ao trocar entre Auto/Manual
-        glossaryInput.value = '';
+        glossaryInput.textContent = '';
         glossaryInput.style.height = 'auto'; 
         // --- FIM DA LIMPEZA ---
 
@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUIMode() {
         // --- LIMPEZA ADICIONADA (Trigger 1) ---
         // Limpa ambas as caixas ao trocar de modo (NL->CPC / CPC->NL)
-        userInput.value = '';
-        glossaryInput.value = '';
+        userInput.textContent = '';
+        glossaryInput.textContent = '';
         userInput.style.height = 'auto'; 
         glossaryInput.style.height = 'auto';
         // --- FIM DA LIMPEZA ---

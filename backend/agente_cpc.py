@@ -350,7 +350,8 @@ def traduzir_para_nl(data: dict):
             prompt_glossario = f"""
             Você é um assistente que cria glossários.
             Gere um glossário simples em português para as variáveis lógicas: {atomos}.
-            As definições devem ser frases afirmativas curtas.
+            As definições devem ser frases afirmativas curtas, claras e naturais.
+            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas.
             
             Responda APENAS com o objeto JSON.
             
