@@ -305,7 +305,6 @@ def traduzir_para_nl(data: dict):
     print(f"💬 CPC->NL Recebido: {data}")
     
     try:
-        # Pega a fórmula "bruta" do usuário
         cpc_formula = data.get('input_text')
         mode = data.get('generation_mode')
         glossary_str = data.get('glossary')
@@ -313,39 +312,20 @@ def traduzir_para_nl(data: dict):
         if not cpc_formula:
             raise ValueError("Nenhuma fórmula CPC fornecida.")
 
-        # --- NOVO BLOCO DE NORMALIZAÇÃO ---
+        # --- Bloco de Normalização ---
         print(f"   [CPC->NL] Normalizando fórmula de entrada: '{cpc_formula}'")
-        
-        # Substitui "e" (como palavra inteira) por "^"
-        # O re.IGNORECASE pega 'e', 'E', 'eU', etc.
-        # O \b significa "word boundary" (limite da palavra)
         cpc_formula_normalizada = re.sub(r'\be\b', '^', cpc_formula, flags=re.IGNORECASE)
-        
-        # Substitui "ou" (como palavra inteira) por "v"
         cpc_formula_normalizada = re.sub(r'\bou\b', 'v', cpc_formula_normalizada, flags=re.IGNORECASE)
-        
         print(f"   [CPC->NL] Fórmula normalizada: '{cpc_formula_normalizada}'")
-        # --- FIM DO NOVO BLOCO ---
+        # --- Fim do Bloco ---
 
 
-        # 1. Encontrar todos os átomos (usando a fórmula normalizada)
-        
-        # Encontra todas as letras MAIÚSCULAS
+        # 1. Encontrar todos os átomos
         atomos_maiusculos = set(re.findall(r'\b([A-Z])\b', cpc_formula_normalizada))
-        
-        # Encontra todas as letras MINÚSCULAS
         atomos_minusculos = set(re.findall(r'\b([a-z])\b', cpc_formula_normalizada))
-        
-        # Define os operadores minúsculos conhecidos
-        operadores_minusculos = {'v'} # 'v' de "ou" que acabamos de adicionar
-        
-        # Filtra os operadores
+        operadores_minusculos = {'v'}
         atomos_minusculos_filtrados = atomos_minusculos - operadores_minusculos
-        
-        # Converte os átomos minúsculos restantes para maiúsculo
         atomos_minusculos_upper = {letra.upper() for letra in atomos_minusculos_filtrados}
-        
-        # Junta tudo
         atomos_finais = atomos_maiusculos.union(atomos_minusculos_upper)
         
         if not atomos_finais:
@@ -356,7 +336,7 @@ def traduzir_para_nl(data: dict):
 
         glossario_final = {}
 
-        # 2. Construir o glossário (lógica permanece a mesma)
+        # 2. Construir o glossário
         if mode == 'manual':
             print("   [CPC->NL] Modo Manual: Analisando glossário...")
             glossario_final = _parsear_glossario(glossary_str)
@@ -366,18 +346,21 @@ def traduzir_para_nl(data: dict):
                     raise ValueError(f"Glossário manual incompleto. Definição para '{atomo}' não encontrada.")
 
         elif mode == 'auto':
-            # ... (Lógica do modo auto permanece a mesma) ...
             print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
+            
+            # --- CORREÇÃO DO PROMPT DO GLOSSÁRIO ---
             prompt_glossario = f"""
-                Crie um glossário em português para as seguintes variáveis: {', '.join(atomos)}.
-                As definições devem ser frases afirmativas simples.
-                Responda APENAS com o objeto JSON no formato exato: {{"P": "...", "Q": "..."}}.
+            Crie um glossário em português para as seguintes variáveis proposicionais: {', '.join(atomos)}.
+            As definições devem ser frases afirmativas simples.
+            
+            Responda APENAS com um objeto JSON. As chaves devem ser as variáveis (em maiúsculas) e os valores devem ser as definições.
 
-                Exemplo de Saída (para P, Q):
-                {{"P": "Está chovendo", "Q": "O chão está molhado"}}
+            Exemplo de Formato (para X, Y):
+            {{"X": "Definição para X", "Y": "Definição para Y"}}
 
-                Sua Tarefa (APENAS JSON):
-                """
+            Sua Tarefa (APENAS JSON para {', '.join(atomos)}):
+            """
+            # --- FIM DA CORREÇÃO ---
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -387,12 +370,14 @@ def traduzir_para_nl(data: dict):
             )
             glossario_final = json.loads(response.choices[0].message.content)
 
-        # 3. Gerar a Frase Final (usando a fórmula normalizada)
+        # 3. Gerar a Frase Final
         print("   [CPC->NL] Gerando frase final...")
         
         glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
         
-        # PROMPT FINAL ATUALIZADO (com exemplos explícitos)
+        # --- CORREÇÃO DO .UPPER() ---
+        formula_para_prompt = cpc_formula_normalizada.upper()
+        
         prompt_final = f"""
         Traduza a fórmula lógica para uma frase fluida em português, usando o glossário.
         Siga o padrão dos exemplos abaixo.
@@ -415,16 +400,16 @@ def traduzir_para_nl(data: dict):
         ---
 
         **REGRAS ESTRITAS PARA SUA TAREFA:**
-        1.  **Siga o estilo dos exemplos:** Negação atômica (¬P) deve ser natural (ex: "não está"). Negação de escopo (¬(...)) deve ser "Não é verdade que...".
+        1.  Siga o estilo dos exemplos.
         2.  Use conectivos naturais (e, ou, se... então).
-        3.  **NÃO** explique seu processo.
-        4.  **NÃO** mencione as palavras "fórmula", "glossário", "exemplo" ou "tradução".
-        5.  Responda **APENAS** com a frase resultante.
+        3.  NÃO explique seu processo.
+        4.  NÃO mencione as palavras "fórmula", "glossário", "exemplo" ou "tradução".
+        5.  Responda APENAS com a frase resultante.
 
         **Sua Tarefa:**
 
         **Fórmula:**
-        {cpc_formula_normalizada}
+        {formula_para_prompt}
 
         **Glossário:**
         {glossario_prompt_str}
@@ -433,7 +418,6 @@ def traduzir_para_nl(data: dict):
         """
         
         response_final = client.chat.completions.create(
-            # (o resto da chamada da API permanece o mesmo)
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt_final}],
             temperature=0.2,
@@ -451,7 +435,6 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
-        # Esta linha registra o traceback COMPLETO no log do Render
         logging.exception("Erro ao executar traduzir_para_nl")
         return {"success": False, "error": str(e), "glossary_used": {}}
 
