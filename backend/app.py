@@ -1,14 +1,18 @@
 # [ INÍCIO de app.py ]
 
 import os
-import traceback # <-- MUDANÇA (logging removido)
+import logging # <-- RE-ADICIONADO
+import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
+# Configura o logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 try:
     from agente_cpc import traduzir_para_cpc, traduzir_para_nl
 except ImportError:
-    print("ERRO FATAL: Não foi possível importar 'traduzir_para_cpc' ou 'traduzir_para_nl' de 'agente_cpc.py'.")
+    logging.exception("ERRO FATAL: Falha ao importar agente_cpc.py")
     def traduzir_para_cpc(texto):
         return {"success": False, "error": "Lógica 'traduzir_para_cpc' não encontrada no servidor."}
     def traduzir_para_nl(data):
@@ -39,10 +43,7 @@ def handle_nl_to_cpc():
             return jsonify(resultado), 500
 
     except Exception as e:
-        # --- MUDANÇA AQUI ---
-        print("--- ERRO FATAL EM handle_nl_to_cpc ---")
-        print(traceback.format_exc()) # Força o erro para o log
-        # --- FIM DA MUDANÇA ---
+        logging.exception("Erro fatal em handle_nl_to_cpc")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # --- ROTA 2: CPC para NL ---
@@ -62,14 +63,11 @@ def handle_cpc_to_nl():
             return jsonify(resultado), 500
 
     except Exception as e:
-        # --- MUDANÇA AQUI ---
-        print("--- ERRO FATAL EM handle_cpc_to_nl ---")
-        print(traceback.format_exc()) # Força o erro para o log
-        # --- FIM DA MUDANÇA ---
+        logging.exception("Erro fatal em handle_cpc_to_nl")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False) # Debug=False é melhor para produção
 
 # [ FIM de app.py ]

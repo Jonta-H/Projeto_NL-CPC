@@ -3,12 +3,12 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# Removidas as importações do Flask
 import os
 import sys
 import json
 import spacy 
-import re
+import re 
+import logging # <-- RE-ADICIONADO
 import traceback
 
 # Importa nossos módulos locais
@@ -382,7 +382,7 @@ def traduzir_para_nl(data: dict):
         # Se o glossário ainda estiver vazio (porque o LLM falhou),
         # lançamos um erro claro.
         if not glossario_final:
-            print("   [CPC->NL] ERRO: O LLM gerou um glossário vazio.")
+            logging.error(f"O LLM gerou um glossário vazio ({glossario_final}) para os átomos {atomos}")
             raise ValueError("Falha na geração do glossário (LLM retornou glossário vazio).")
         # --- FIM DO VERIFICADOR ---
             
@@ -440,7 +440,7 @@ def traduzir_para_nl(data: dict):
         frase_gerada = response_final.choices[0].message.content.strip()
         
         if not frase_gerada:
-             print("   [CPC->NL] ERRO: O LLM gerou uma frase final vazia.")
+             logging.error(f"O LLM gerou uma frase final vazia. Glossário usado: {glossario_final}")
              raise ValueError("Falha na geração da frase (LLM retornou frase vazia).")
         
         print("   [CPC->NL] Sucesso!")
@@ -455,8 +455,7 @@ def traduzir_para_nl(data: dict):
         # Agora, se o glossário ou a frase estiverem vazios,
         # o 'raise ValueError' acima será apanhado aqui
         # e o traceback será impresso nos logs.
-        print("--- ERRO GERAL EM traduzir_para_nl ---")
-        print(traceback.format_exc()) 
+        logging.exception("Erro ao executar traduzir_para_nl") 
         return {"success": False, "error": str(e), "glossary_used": {}}
 
 # [ FIM de agente_cpc.py ]
