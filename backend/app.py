@@ -1,6 +1,7 @@
 # [ INÍCIO de app.py ]
 
 import os
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -48,6 +49,7 @@ def handle_nl_to_cpc():
             return jsonify(resultado), 500
 
     except Exception as e:
+        logging.exception("Erro fatal em handle_nl_to_cpc")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # --- ROTA 2: CPC para NL ---
@@ -69,6 +71,7 @@ def handle_cpc_to_nl():
             return jsonify(resultado), 500
 
     except Exception as e:
+        logging.exception("Erro fatal em handle_cpc_to_nl")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # Permite que o Render/Hospedagem escolha a porta

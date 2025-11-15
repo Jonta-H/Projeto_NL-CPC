@@ -9,6 +9,7 @@ import sys
 import json
 import spacy 
 import re
+import logging
 
 # Importa nossos módulos locais
 from spacy_extractor import extrair_componentes
@@ -255,11 +256,8 @@ def traduzir_para_cpc(texto_entrada: str):
             raise Exception("Falha ao construir o objeto SymPy.")
 
     except Exception as e:
-        print(f"\n❌ ERRO GERAL: {e}")
-        import traceback
-        traceback.print_exc()
-        
-        # --- MUDANÇA IMPORTANTE: RETORNAR O ERRO ---
+        # Esta linha registra o traceback COMPLETO no log do Render
+        logging.exception("Erro ao executar traduzir_para_cpc") 
         return {"success": False, "error": str(e)}
 
 def _parsear_glossario(glossary_str: str) -> dict:
@@ -453,9 +451,8 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
-        print(f"\n❌ ERRO GERAL (CPC->NL): {e}")
-        import traceback
-        traceback.print_exc()
+        # Esta linha registra o traceback COMPLETO no log do Render
+        logging.exception("Erro ao executar traduzir_para_nl")
         return {"success": False, "error": str(e), "glossary_used": {}}
 
 # [ FIM de agente_cpc.py ]
