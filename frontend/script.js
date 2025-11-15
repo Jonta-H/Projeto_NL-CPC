@@ -36,6 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funções de Controle da UI ---
 
     function updateGenerationModeUI() {
+        // --- LIMPEZA ADICIONADA (Trigger 2) ---
+        // Limpa apenas o glossário ao trocar entre Auto/Manual
+        glossaryInput.value = '';
+        glossaryInput.style.height = 'auto'; 
+        // --- FIM DA LIMPEZA ---
+
         const selectedGenMode = document.querySelector('input[name="generation-mode"]:checked').value;
         descriptionAuto.style.display = (selectedGenMode === 'auto') ? 'block' : 'none';
         descriptionManual.style.display = (selectedGenMode === 'manual') ? 'block' : 'none';
@@ -43,14 +49,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUIMode() {
+        // --- LIMPEZA ADICIONADA (Trigger 1) ---
+        // Limpa ambas as caixas ao trocar de modo (NL->CPC / CPC->NL)
+        userInput.value = '';
+        glossaryInput.value = '';
+        userInput.style.height = 'auto'; 
+        glossaryInput.style.height = 'auto';
+        // --- FIM DA LIMPEZA ---
+
         const selectedMode = document.querySelector('input[name="translation-mode"]:checked').value;
         userInput.placeholder = placeholders[selectedMode];
         buttonText.textContent = buttonLabels[selectedMode];
-        resetResponseUI(); // Reseta a UI ao trocar de modo
+        resetResponseUI(); // Reseta a UI de resposta
         
         if (selectedMode === 'cpc-nl') {
             generationOptionsContainer.classList.add('show');
-            updateGenerationModeUI(); // Atualiza o estado interno (auto/manual)
+            updateGenerationModeUI();
         } else {
             generationOptionsContainer.classList.remove('show');
             glossaryInput.classList.remove('show');
@@ -77,14 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
     functionRadios.forEach(radio => radio.addEventListener('change', updateUIMode));
     generationRadios.forEach(radio => radio.addEventListener('change', updateGenerationModeUI));
 
-    // Listeners para os inputs (auto-expansão e reset)
+    // Listeners para os inputs (auto-expansão e reset de *resposta*)
     userInput.addEventListener('input', () => {
-        resetResponseUI();
+        resetResponseUI(); // Reseta apenas a resposta
         userInput.style.height = 'auto'; 
         userInput.style.height = (userInput.scrollHeight) + 'px';
     });
     glossaryInput.addEventListener('input', () => {
-        resetResponseUI();
+        resetResponseUI(); // Reseta apenas a resposta
         glossaryInput.style.height = 'auto'; 
         glossaryInput.style.height = (glossaryInput.scrollHeight) + 'px';
     });
@@ -196,12 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para chamar o agente CPC -> NL
     async function chamarApiCpcNl(data) {
-        
-        // --- A CORREÇÃO ESTÁ AQUI ---
-        // O URL estava errado (apontava para 'traduzir-nl-cpc')
         const API_URL = 'https://projeto-nl-cpc.onrender.com/api/gerar-cpc-nl'; 
-        // --- FIM DA CORREÇÃO ---
-
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
