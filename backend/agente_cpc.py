@@ -317,8 +317,6 @@ def traduzir_para_nl(data: dict):
         cpc_formula_normalizada = re.sub(r'\be\b', '^', cpc_formula, flags=re.IGNORECASE)
         cpc_formula_normalizada = re.sub(r'\bou\b', 'v', cpc_formula_normalizada, flags=re.IGNORECASE)
         print(f"   [CPC->NL] Fórmula normalizada: '{cpc_formula_normalizada}'")
-        # --- Fim do Bloco ---
-
 
         # 1. Encontrar todos os átomos
         atomos_maiusculos = set(re.findall(r'\b([A-Z])\b', cpc_formula_normalizada))
@@ -348,14 +346,20 @@ def traduzir_para_nl(data: dict):
         elif mode == 'auto':
             print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
             
+            # --- PROMPT DO GLOSSÁRIO CORRIGIDO E MAIS ROBUSTO ---
             prompt_glossario = f"""
-            Sua tarefa é gerar um objeto JSON.
-            O objeto deve ser um glossário em português para as seguintes variáveis lógicas: {', '.join(atomos)}.
-            As chaves do JSON devem ser as variáveis (em maiúsculas).
-            Os valores do JSON devem ser frases afirmativas curtas (ex: "O sol brilha").
+            Você é um assistente que cria glossários.
+            Gere um glossário simples em português para as variáveis lógicas: {atomos}.
+            As definições devem ser frases afirmativas curtas.
             
-            Responda APENAS com o objeto JSON, sem nenhum texto extra.
+            Responda APENAS com o objeto JSON.
+            
+            Exemplo de Resposta para ['X', 'Y']:
+            {{"X": "O céu é azul", "Y": "A grama é verde"}}
+            
+            Sua Tarefa (Gerar JSON para {atomos}):
             """
+            # --- FIM DA CORREÇÃO ---
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -366,20 +370,22 @@ def traduzir_para_nl(data: dict):
             
             llm_response_str = response.choices[0].message.content
             
-            # --- NOVO BLOCO DE VERIFICAÇÃO DEFENSIVA ---
-            try:
-                glossario_final = json.loads(llm_response_str)
-                print(f"   [CPC->NL] Glossário gerado: {glossario_final}")
-            except json.JSONDecodeError:
-                print("--- ERRO DE JSON (traduzir_para_nl) ---")
-                print(f"Resposta inválida do LLM (não é JSON): '{llm_response_str}'")
-                raise ValueError("LLM falhou ao gerar um glossário JSON válido.")
-            # --- FIM DO NOVO BLOCO ---
+            # Vamos remover o bloco try/except interno,
+            # pois 'response_format' garante um JSON (mesmo que seja {})
+            glossario_final = json.loads(llm_response_str)
+            print(f"   [CPC->NL] Glossário gerado: {glossario_final}")
 
         # 3. Gerar a Frase Final
-        # ... (O resto da função "Gerar a Frase Final" permanece exatamente o mesmo) ...
-        
         print("   [CPC->NL] Gerando frase final...")
+        
+        # --- NOVO VERIFICADOR DE GLOSSÁRIO VAZIO ---
+        # Se o glossário ainda estiver vazio (porque o LLM falhou),
+        # lançamos um erro claro.
+        if not glossario_final:
+            print("   [CPC->NL] ERRO: O LLM gerou um glossário vazio.")
+            raise ValueError("Falha na geração do glossário (LLM retornou glossário vazio).")
+        # --- FIM DO VERIFICADOR ---
+            
         
         glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
         
@@ -433,6 +439,10 @@ def traduzir_para_nl(data: dict):
         
         frase_gerada = response_final.choices[0].message.content.strip()
         
+        if not frase_gerada:
+             print("   [CPC->NL] ERRO: O LLM gerou uma frase final vazia.")
+             raise ValueError("Falha na geração da frase (LLM retornou frase vazia).")
+        
         print("   [CPC->NL] Sucesso!")
         
         return {
@@ -442,8 +452,11 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
+        # Agora, se o glossário ou a frase estiverem vazios,
+        # o 'raise ValueError' acima será apanhado aqui
+        # e o traceback será impresso nos logs.
         print("--- ERRO GERAL EM traduzir_para_nl ---")
-        print(traceback.format_exc()) # Força o traceback para o log
+        print(traceback.format_exc()) 
         return {"success": False, "error": str(e), "glossary_used": {}}
 
 # [ FIM de agente_cpc.py ]
