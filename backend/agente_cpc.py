@@ -141,7 +141,7 @@ def criar_prompt_otimizado(texto_original: str, operador_principal_py: str) -> s
 
     elif operador_principal_py == "Not":
         prompt = f"""{instrucao_base}
-        A frase é uma NEGAÇÃO DE ESCOPO ('É falso que...'). 
+        A frase é uma NEGAÇÃO DE ESCOPO ('É falso que...', 'Não é o caso que...', 'Não é verdade que...'). 
         Extraia a proposição inteira que está sendo negada.
         (Ex: "É falso que P e Q" -> {{"proposicao_negada": "P e Q"}})
         JSON de Saída:"""
@@ -351,7 +351,7 @@ def traduzir_para_nl(data: dict):
             Você é um assistente que cria glossários.
             Gere um glossário simples em português para as variáveis lógicas: {atomos}.
             As definições devem ser frases afirmativas curtas, claras e naturais.
-            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas mas que façam sentido lógico em um mesmo contexto.
+            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas mas *QUE SE ENCAIXEM EM UM MESMO CONTEXTO*.
             Responda sem explicações ou texto adicional.
             
             Responda APENAS com o objeto JSON.
@@ -413,6 +413,10 @@ def traduzir_para_nl(data: dict):
         Glossário: P: Chove, Q: O sol brilha
         Frase Resultante: Se chove, então o sol não brilha.
         ---
+        **Exemplo 4: Negação de Negação**
+        Fórmulas: ¬¬P, ¬(¬P)
+        Glossário: P: Está ensolarado
+        Frase Resultante: Não é verdade que não está ensolarado. / Não é o caso que não está ensolarado.
 
         **REGRAS ESTRITAS PARA SUA TAREFA:**
         1.  Siga o estilo dos exemplos.
