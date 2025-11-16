@@ -301,6 +301,11 @@ def traduzir_para_nl(data: dict):
         cpc_formula_normalizada = re.sub(r'\bou\b', 'v', cpc_formula_normalizada, flags=re.IGNORECASE)
         print(f"   [CPC->NL] Fórmula normalizada: '{cpc_formula_normalizada}'")
 
+        # --- MUDANÇA (MOVENDO PARA CIMA) ---
+        # Movemos esta linha para que o passo 2 (glossário) possa usá-la
+        formula_para_prompt = cpc_formula_normalizada.upper()
+        # --- FIM DA MUDANÇA ---
+
         # 1. Encontrar todos os átomos
         atomos_maiusculos = set(re.findall(r'\b([A-Z])\b', cpc_formula_normalizada))
         atomos_minusculos = set(re.findall(r'\b([a-z])\b', cpc_formula_normalizada))
@@ -329,18 +334,24 @@ def traduzir_para_nl(data: dict):
         elif mode == 'auto':
             print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
             
-            # --- PROMPT DO GLOSSÁRIO ---
             prompt_glossario = f"""
-            Você é um assistente que cria glossários.
-            Gere um glossário simples em português para as variáveis lógicas: {atomos}.
-            As definições devem ser frases afirmativas curtas, claras e naturais.
-            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas.
-            Responda sem explicações ou texto adicional.
+            Você é um assistente de lógica que cria glossários realistas.
+            Sua tarefa é gerar um glossário JSON em português para as variáveis lógicas em {atomos}.
             
-            Responda APENAS com o objeto JSON.
+            **Importante:** As definições que você criar devem ser **coerentes com a fórmula lógica** fornecida. 
+            Por exemplo, para "P -> Q", crie definições onde P implique Q (ex: P: "Chove", Q: "A rua fica molhada").
+            Para "P ^ Q", crie definições que façam sentido juntas (ex: P: "O céu está azul", Q: "O sol brilha").
             
-            Exemplo de Resposta para ['X', 'Y']:
-            {{"X": "O céu é azul", "Y": "A grama é verde"}}
+            **Fórmula de Contexto:**
+            {formula_para_prompt}
+            
+            **Regras de Saída:**
+            1. As definições devem ser frases afirmativas curtas e simples.
+            2. As chaves do JSON devem ser as variáveis (em maiúsculas).
+            3. Responda APENAS com o objeto JSON.
+            
+            Exemplo de Resposta para ['X', 'Y'] (e fórmula X -> Y):
+            {{"X": "O alarme toca", "Y": "A segurança é notificada"}}
             
             Sua Tarefa (Gerar JSON para {atomos}):
             """
@@ -365,8 +376,6 @@ def traduzir_para_nl(data: dict):
             raise ValueError("Falha na geração do glossário (LLM retornou glossário vazio).")
         
         glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
-        
-        formula_para_prompt = cpc_formula_normalizada.upper()
         
         prompt_final = f"""
         Traduza a fórmula lógica para uma frase fluida em português, usando o glossário.
