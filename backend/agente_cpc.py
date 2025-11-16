@@ -408,12 +408,17 @@ def traduzir_para_nl(data: dict):
         Glossário: P: O gato está dormindo, Q: O cachorro está latindo
         Frase Resultante: Não é verdade que o gato está dormindo e o cachorro está latindo.
         ---
-        **Exemplo 3: Negação Atômica (em contexto)**
+        **Exemplo 3: Negação de Escopo com Negação**
+        Fórmula: ¬(P ^ ¬Q)
+        Glossário: P: O céu está limpo, Q: Está chovendo
+        Frase Resultante: Não é verdade que o céu está limpo e não está chovendo.
+        ---
+        **Exemplo 4: Negação Atômica (em contexto)**
         Fórmula: P -> ¬Q
         Glossário: P: Chove, Q: O sol brilha
         Frase Resultante: Se chove, então o sol não brilha.
         ---
-        **Exemplo 4: Negação de Negação**
+        **Exemplo 5: Negação de Negação**
         Fórmulas: ¬¬P, ¬(¬P)
         Glossário: P: Está ensolarado
         Frase Resultante: Não é verdade que não está ensolarado. / Não é o caso que não está ensolarado.
