@@ -1,5 +1,3 @@
-# [ INÍCIO de agente_cpc.py ]
-
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -8,7 +6,7 @@ import sys
 import json
 import spacy 
 import re 
-import logging # <-- RE-ADICIONADO
+import logging 
 import traceback
 
 # Importa nossos módulos locais
@@ -37,12 +35,6 @@ client = OpenAI(
     api_key=GROQ_API_KEY
 )
 
-# --- Funções de ajuda (analisar_proposicao, determinar_operador_principal, etc.) ---
-# ... (Mantenha todas as suas funções de ajuda que já estão aqui) ...
-# ... (analisar_proposicao, determinar_operador_principal, criar_prompt_otimizado) ...
-
-# (Vou colar as suas funções de ajuda aqui para garantir)
-
 def analisar_proposicao(texto_bruto: str) -> dict:
     """Caso base: analisa um texto em busca de negação."""
     doc = nlp_negation(texto_bruto.strip())
@@ -65,20 +57,15 @@ def analisar_proposicao(texto_bruto: str) -> dict:
 def determinar_operador_principal(conectivos: list) -> str:
     """Decide o operador principal com base na prioridade."""
     
-    # --- PRIORIDADES CORRIGIDAS ---
-    # "ou" (Disjunção) agora tem prioridade 2
-    # "e" (Conjunção) agora tem prioridade 1
-    # Isso garante que "ou" seja escolhido como o operador principal
-    # em frases ambíguas como "P ou Q e R".
+    # --- PRIORIDADES ---
     prioridade = {
         "NEGACAO_ESCOPO": 5,  # Prioridade mais alta (escopo)
         "BIIMPLICACAO": 4,
         "CONDICIONAL": 3,
-        "DISJUNCAO": 2,     # <-- MUDADO DE 1
-        "CONJUNCAO": 1,     # <-- MUDADO DE 2
+        "DISJUNCAO": 2,
+        "CONJUNCAO": 1,
         "NEGACAO_SIMPLES": 0
     }
-    # --- FIM DA CORREÇÃO ---
     
     operador_principal_str = "None"
     max_prioridade = -1
@@ -179,8 +166,6 @@ def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_
     # --- PASSO RECURSIVO: É uma proposição composta ---
     
     # 3. Pede ao LLM para dividir as partes
-    prompt = criar_prompt_otimizado(componentes, operador) # ERRO AQUI: componentes é um dict, não a string
-    # CORREÇÃO:
     prompt = criar_prompt_otimizado(texto_bruto, operador)
     
     response = client.chat.completions.create(
@@ -244,7 +229,7 @@ def traduzir_para_cpc(texto_entrada: str):
             definicoes_formatadas = [{"var": var, "def": definicao} 
                                      for var, definicao in definicoes_globais.items()]
 
-            # --- MUDANÇA PRINCIPAL: RETORNAR O DICIONÁRIO ---
+            print(f"Fórmula CPC: {formula_cpc_str}\nDefinições: {definicoes_formatadas}")
             return {
                 "success": True,
                 "cpc_string": formula_cpc_str,
@@ -283,10 +268,9 @@ def _parsear_glossario(glossary_str: str) -> dict:
         # É linha única, quebra usando o regex
         entradas = re.split(padrao_split, texto_limpo)
     else:
-        # É multi-linha (ou uma única entrada), quebra por linha
+        # É multi-linha, quebra por linha
         entradas = texto_limpo.split('\n')
 
-    # O resto da lógica é o mesmo
     for item in entradas:
         partes = item.strip().split(':', 1) # Divide apenas no primeiro ':'
         if len(partes) == 2:
@@ -296,7 +280,6 @@ def _parsear_glossario(glossary_str: str) -> dict:
                 glossario[var] = definicao
     return glossario
 
-# --- NOVA FUNÇÃO PLACEHOLDER (CPC -> NL) ---
 def traduzir_para_nl(data: dict):
     """
     Função principal para a tradução CPC -> NL.
@@ -346,7 +329,7 @@ def traduzir_para_nl(data: dict):
         elif mode == 'auto':
             print("   [CPC->NL] Modo Automático: Gerando glossário com LLM...")
             
-            # --- PROMPT DO GLOSSÁRIO CORRIGIDO E MAIS ROBUSTO ---
+            # --- PROMPT DO GLOSSÁRIO ---
             prompt_glossario = f"""
             Você é um assistente que cria glossários.
             Gere um glossário simples em português para as variáveis lógicas: {atomos}.
@@ -361,7 +344,6 @@ def traduzir_para_nl(data: dict):
             
             Sua Tarefa (Gerar JSON para {atomos}):
             """
-            # --- FIM DA CORREÇÃO ---
             
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -372,22 +354,15 @@ def traduzir_para_nl(data: dict):
             
             llm_response_str = response.choices[0].message.content
             
-            # Vamos remover o bloco try/except interno,
-            # pois 'response_format' garante um JSON (mesmo que seja {})
             glossario_final = json.loads(llm_response_str)
             print(f"   [CPC->NL] Glossário gerado: {glossario_final}")
 
         # 3. Gerar a Frase Final
         print("   [CPC->NL] Gerando frase final...")
         
-        # --- NOVO VERIFICADOR DE GLOSSÁRIO VAZIO ---
-        # Se o glossário ainda estiver vazio (porque o LLM falhou),
-        # lançamos um erro claro.
         if not glossario_final:
             logging.error(f"O LLM gerou um glossário vazio ({glossario_final}) para os átomos {atomos}")
             raise ValueError("Falha na geração do glossário (LLM retornou glossário vazio).")
-        # --- FIM DO VERIFICADOR ---
-            
         
         glossario_prompt_str = "\n".join([f"{k}: {v}" for k, v in glossario_final.items()])
         
@@ -455,6 +430,7 @@ def traduzir_para_nl(data: dict):
              raise ValueError("Falha na geração da frase (LLM retornou frase vazia).")
         
         print("   [CPC->NL] Sucesso!")
+        print(f"Frase Gerada: {frase_gerada}")
         
         return {
             "success": True,
@@ -463,10 +439,6 @@ def traduzir_para_nl(data: dict):
         }
 
     except Exception as e:
-        # Agora, se o glossário ou a frase estiverem vazios,
-        # o 'raise ValueError' acima será apanhado aqui
-        # e o traceback será impresso nos logs.
+        # Traceback para logging detalhado
         logging.exception("Erro ao executar traduzir_para_nl") 
         return {"success": False, "error": str(e), "glossary_used": {}}
-
-# [ FIM de agente_cpc.py ]

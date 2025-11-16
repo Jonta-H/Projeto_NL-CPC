@@ -18,16 +18,14 @@ def formatar_para_cpc(expr) -> str:
     if isinstance(expr, Symbol):
         return str(expr)
     
-    # --- LÓGICA DE NEGAÇÃO CORRIGIDA ---
+    # --- LÓGICA DE NEGAÇÃO ---
     if isinstance(expr, Not):
         arg = expr.args[0]
         # Formata o argumento (ex: (P ^ Q) ou P)
         formatted_arg = formatar_para_cpc(arg)
         
-        # Apenas adiciona o '¬'. A sub-expressão já tem
-        # seus próprios parênteses, se necessário.
+        # Apenas adiciona o '¬'
         return f"¬{formatted_arg}"
-    # --- FIM DA CORREÇÃO ---
 
     # Caso recursivo: Operadores binários (And, Or, Implies...)
     if expr.func in CPC_MAP:
@@ -42,7 +40,6 @@ def formatar_para_cpc(expr) -> str:
     raise TypeError(f"Tipo de expressão não suportado: {type(expr)}")
 
 
-# A função construir_formula continua a mesma de antes
 def construir_formula(formula_str: str, definicoes: dict):
     """
     Converte uma string de fórmula (sintaxe SymPy) em um objeto

@@ -8,8 +8,6 @@ except IOError:
     print("Execute: python -m spacy download pt_core_news_sm")
     exit(1)
 
-# --- MUDANÇA AQUI ---
-# Adicionamos o novo padrão para "Não é verdade que"
 CONNECTIVE_PATTERNS = {
     "BIIMPLICACAO": [[{"LOWER": "se"}, {"LOWER": "e"}, {"LOWER": "somente"}, {"LOWER": "se"}]],
     "NEGACAO_ESCOPO": [

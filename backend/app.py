@@ -1,8 +1,5 @@
-# [ INÍCIO de app.py ]
-
 import os
-import logging # <-- RE-ADICIONADO
-import traceback
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -68,6 +65,4 @@ def handle_cpc_to_nl():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False) # Debug=False é melhor para produção
-
-# [ FIM de app.py ]
+    app.run(host='0.0.0.0', port=port, debug=False)
