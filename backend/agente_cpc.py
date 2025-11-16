@@ -334,7 +334,7 @@ def traduzir_para_nl(data: dict):
             Você é um assistente que cria glossários.
             Gere um glossário simples em português para as variáveis lógicas: {atomos}.
             As definições devem ser frases afirmativas curtas, claras e naturais.
-            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas mas *QUE SE ENCAIXEM EM UM MESMO CONTEXTO*.
+            Dê preferência a definições SIMPLES, cotidianas, e não ambíguas.
             Responda sem explicações ou texto adicional.
             
             Responda APENAS com o objeto JSON.
