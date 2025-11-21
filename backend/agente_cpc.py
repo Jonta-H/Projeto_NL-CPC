@@ -59,14 +59,15 @@ def determinar_operador_principal(conectivos: list) -> str:
 
     if not conectivos: return "None"
 
-    for con in conectivos:
-        # Se começa com "Não é verdade que..." (Prioridade absoluta se estiver no início)
-        if con.get("tipo") == "NEGACAO_ESCOPO" and con.get("start", 100) < 5:
-            return "Not"
-            
-        # Se começa com "Se..." (Prioridade absoluta se estiver no início e não houver negação antes)
-        if con.get("tipo") == "CONDICIONAL" and con.get("start", 100) < 5:
-            return "Implies"
+    conectivos_ordenados = sorted(conectivos, key=lambda x: x.get("start", 9999))
+    
+    primeiro_con = conectivos_ordenados[0]
+    
+    if primeiro_con.get("tipo") == "NEGACAO_ESCOPO" and primeiro_con.get("start", 100) < 10:
+        return "Not"
+
+    if primeiro_con.get("tipo") == "CONDICIONAL" and primeiro_con.get("start", 100) < 10:
+        return "Implies"
 
     # --- PRIORIDADES ---
     prioridade = {
