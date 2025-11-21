@@ -36,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funções de Controle da UI ---
 
     function updateGenerationModeUI() {
-        // --- LIMPEZA ADICIONADA (Trigger 2) ---
         // Limpa apenas o glossário ao trocar entre Auto/Manual
         glossaryInput.value = '';
         glossaryInput.style.height = 'auto'; 
-        // --- FIM DA LIMPEZA ---
 
         const selectedGenMode = document.querySelector('input[name="generation-mode"]:checked').value;
         descriptionAuto.style.display = (selectedGenMode === 'auto') ? 'block' : 'none';
@@ -49,13 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUIMode() {
-        // --- LIMPEZA ADICIONADA (Trigger 1) ---
         // Limpa ambas as caixas ao trocar de modo (NL->CPC / CPC->NL)
         userInput.value = '';
         glossaryInput.value = '';
         userInput.style.height = 'auto'; 
         glossaryInput.style.height = 'auto';
-        // --- FIM DA LIMPEZA ---
 
         const selectedMode = document.querySelector('input[name="translation-mode"]:checked').value;
         userInput.placeholder = placeholders[selectedMode];

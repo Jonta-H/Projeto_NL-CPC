@@ -25,7 +25,6 @@ def setup_matcher():
     """Cria e configura o Matcher com nossos padrões de conectivos."""
     matcher = Matcher(nlp.vocab)
     
-    # Adicionamos todos os tipos
     matcher.add("BIIMPLICACAO", CONNECTIVE_PATTERNS["BIIMPLICACAO"])
     matcher.add("NEGACAO_ESCOPO", CONNECTIVE_PATTERNS["NEGACAO_ESCOPO"])
     matcher.add("CONJUNCAO", CONNECTIVE_PATTERNS["CONJUNCAO"])

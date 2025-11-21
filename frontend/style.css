@@ -107,7 +107,7 @@ h1 {
     color: #ececf1;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    overflow-y: hidden; /* Para auto-expansão */
+    overflow-y: hidden; 
 }
 #user-input { min-height: 60px; resize: vertical; }
 #glossary-input { min-height: 40px; font-size: 0.9rem; padding: 10px; }
@@ -193,9 +193,6 @@ h1 {
 .action-button:active { transform: translateY(0); }
 
 
-/* ====================================================== */
-/* (NOVOS ESTILOS) PARA RESPOSTA PRINCIPAL (DENTRO DO BLOCO) */
-/* ====================================================== */
 .main-response-container {
     opacity: 0;
     max-height: 0;
@@ -205,7 +202,7 @@ h1 {
 .main-response-container.show {
     opacity: 1;
     max-height: 500px;
-    margin-top: 15px; /* Espaço acima da resposta */
+    margin-top: 15px; 
 }
 #main-response-output {
     width: 100%;
@@ -217,26 +214,25 @@ h1 {
     word-wrap: break-word;
     text-align: center;
     padding: 15px;
-    background-color: #343541; /* Cor de fundo mais escura */
+    background-color: #343541;
     border-radius: 8px;
     border: 1px solid #565869;
 }
-/* (NOVO) Estilo de erro para a caixa de resposta principal */
+/* Estilo de erro para a caixa de resposta principal */
 #main-response-output.error {
-    color: #f77; /* Cor vermelha para erro */
+    color: #f77; 
     font-size: 1rem;
     font-weight: 500;
 }
 
-.details-area { /* <-- RENOMEADO (antiga .response-area) */
+.details-area { 
     width: 100%;
     background-color: #40414f;
     border: 1px solid #565869;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
     
-    /* (MUDADO) Lógica de 'show' agora é só para o container */
-    display: none; /* Começa escondido */
+    display: none; 
     
     position: relative;
     display: flex;
@@ -245,12 +241,10 @@ h1 {
     min-height: 80px;
     flex-direction: column;
     padding: 25px;
-    
-    /* (NOVO) Transição suave para o aparecimento */
     opacity: 0;
     transition: opacity 0.4s ease;
 }
-.details-area.show { /* <-- (NOVO) JS usará isso para mostrar a caixa */
+.details-area.show { 
     display: flex;
     opacity: 1;
 }
@@ -288,7 +282,7 @@ h1 {
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.2s ease;
-    display: none; /* (JS vai mostrar) */
+    display: none; 
     align-items: center;
     gap: 8px;
 }
@@ -331,10 +325,30 @@ h1 {
     padding: 15px;
 }
 
+.footer-note {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #8e8ea0; 
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.4;
+    opacity: 0.8;
+    padding: 0 10px;
+}
+
+.footer-note i {
+    color: #10a37f; /* Verde do tema para o ícone */
+    margin-right: 5px;
+}
+
 /* --- Media Queries --- */
 @media (max-width: 768px) {
     h1 { font-size: 2rem; }
     .github-icon { font-size: 2rem; top: 15px; right: 15px; }
     .interaction-block, .details-area { padding: 20px; }
     #main-response-output { font-size: 1.15rem; }
+    .footer-note {
+        font-size: 0.75rem;
+        margin-bottom: 20px;
+    }
 }

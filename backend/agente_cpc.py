@@ -9,7 +9,7 @@ import re
 import logging 
 import traceback
 
-# Importa nossos módulos locais
+# Importa os módulos locais
 from spacy_extractor import extrair_componentes
 from logic_builder import construir_formula, formatar_para_cpc
 
@@ -301,10 +301,7 @@ def traduzir_para_nl(data: dict):
         cpc_formula_normalizada = re.sub(r'\bou\b', 'v', cpc_formula_normalizada, flags=re.IGNORECASE)
         print(f"   [CPC->NL] Fórmula normalizada: '{cpc_formula_normalizada}'")
 
-        # --- MUDANÇA (MOVENDO PARA CIMA) ---
-        # Movemos esta linha para que o passo 2 (glossário) possa usá-la
         formula_para_prompt = cpc_formula_normalizada.upper()
-        # --- FIM DA MUDANÇA ---
 
         # 1. Encontrar todos os átomos
         atomos_maiusculos = set(re.findall(r'\b([A-Z])\b', cpc_formula_normalizada))
