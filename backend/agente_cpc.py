@@ -160,6 +160,13 @@ def construir_formula_recursiva(texto_bruto: str, definicoes_globais: dict, var_
     
     # 1. Analisa a string atual
     componentes = extrair_componentes(texto_bruto)
+
+    # --- INÍCIO DO DEBUG (RAIO-X) ---
+    print(f"   [DEBUG] Conectivos detectados nesta frase:")
+    for c in componentes['conectivos_encontrados']:
+        print(f"      -> Tipo: {c['tipo']} | Texto: '{c['texto']}' | Start: {c.get('start')}")
+    # --- FIM DO DEBUG ---
+
     operador = determinar_operador_principal(componentes['conectivos_encontrados'])
     print(f"   [Recursão] Operador encontrado: {operador}")
 
