@@ -19,20 +19,14 @@ CONNECTIVE_PATTERNS = {
     "DISJUNCAO": [[{"LOWER": "ou"}], [{"LOWER": "ora"}]],
     "CONDICIONAL": [[{"LOWER": "se"}], [{"LOWER": "implica"}]],
     "MARCADOR_COND": [[{"LOWER": "então"}]],
-    "NEGACAO_SIMPLES": [[{"LOWER": "não"}], [{"LOWER": "nem"}]]
+    "NEGACAO_SIMPLES": [[{"LOWER": "não"}]]
 }
 
 def setup_matcher():
     """Cria e configura o Matcher com nossos padrões de conectivos."""
     matcher = Matcher(nlp.vocab)
-    
-    matcher.add("BIIMPLICACAO", CONNECTIVE_PATTERNS["BIIMPLICACAO"])
-    matcher.add("NEGACAO_ESCOPO", CONNECTIVE_PATTERNS["NEGACAO_ESCOPO"])
-    matcher.add("CONJUNCAO", CONNECTIVE_PATTERNS["CONJUNCAO"])
-    matcher.add("DISJUNCAO", CONNECTIVE_PATTERNS["DISJUNCAO"])
-    matcher.add("CONDICIONAL", CONNECTIVE_PATTERNS["CONDICIONAL"])
-    matcher.add("MARCADOR_COND", CONNECTIVE_PATTERNS["MARCADOR_COND"])
-    matcher.add("NEGACAO_SIMPLES", CONNECTIVE_PATTERNS["NEGACAO_SIMPLES"])
+    for label, patterns in CONNECTIVE_PATTERNS.items():
+        matcher.add(label, patterns)
     return matcher
 
 matcher = setup_matcher()
@@ -59,7 +53,8 @@ def extrair_componentes(texto: str) -> dict:
             continue
         conectivos_encontrados.append({
             "texto": doc[start:end].text,
-            "tipo": label
+            "tipo": label,
+            "start": doc[start].idx
         })
         covered_tokens.update(range(start, end))
 
