@@ -19,7 +19,7 @@ CONNECTIVE_PATTERNS = {
     "DISJUNCAO": [[{"LOWER": "ou"}], [{"LOWER": "ora"}]],
     "CONDICIONAL": [[{"LOWER": "se"}], [{"LOWER": "implica"}]],
     "MARCADOR_COND": [[{"LOWER": "então"}]],
-    "NEGACAO_SIMPLES": [[{"LOWER": "não"}]]
+    "NEGACAO_SIMPLES": [[{"LOWER": "não"}], [{"LOWER": "nem"}]]
 }
 
 def setup_matcher():

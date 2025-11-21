@@ -55,22 +55,31 @@ def analisar_proposicao(texto_bruto: str) -> dict:
     return {"texto_base": texto_base, "negado": negado}
 
 def determinar_operador_principal(conectivos: list) -> str:
-    """Decide o operador principal com base na prioridade."""
-    
+    """ Decide o operador principal com base na POSIÇÃO e na PRIORIDADE. """
+
+    if not conectivos: return "None"
+
+    for con in conectivos:
+        # Se começa com "Não é verdade que..." (Prioridade absoluta se estiver no início)
+        if con.get("tipo") == "NEGACAO_ESCOPO" and con.get("start", 100) < 5:
+            return "Not"
+            
+        # Se começa com "Se..." (Prioridade absoluta se estiver no início e não houver negação antes)
+        if con.get("tipo") == "CONDICIONAL" and con.get("start", 100) < 5:
+            return "Implies"
+
     # --- PRIORIDADES ---
     prioridade = {
-        "NEGACAO_ESCOPO": 5,  # Prioridade mais alta (escopo)
-        "BIIMPLICACAO": 4,
-        "CONDICIONAL": 3,
-        "DISJUNCAO": 2,
-        "CONJUNCAO": 1,
-        "NEGACAO_SIMPLES": 0
+        "BIIMPLICACAO": 4,    # P se e somente se Q
+        "CONDICIONAL": 3,     
+        "DISJUNCAO": 2,       # P ou Q 
+        "CONJUNCAO": 1,       # P e Q
+        "NEGACAO_ESCOPO": 0,  # ¬(...) no meio da frase
+        "NEGACAO_SIMPLES": -1
     }
     
     operador_principal_str = "None"
-    max_prioridade = -1
-
-    if not conectivos: return "None"
+    max_prioridade = -2
 
     for con in conectivos:
         tipo = con.get("tipo")
