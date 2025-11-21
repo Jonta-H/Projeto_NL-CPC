@@ -12,7 +12,8 @@ CONNECTIVE_PATTERNS = {
     "BIIMPLICACAO": [[{"LOWER": "se"}, {"LOWER": "e"}, {"LOWER": "somente"}, {"LOWER": "se"}]],
     "NEGACAO_ESCOPO": [
         [{"LOWER": "é"}, {"LOWER": "falso"}, {"LOWER": "que"}],
-        [{"LOWER": "não"}, {"LOWER": "é"}, {"LOWER": "verdade"}, {"LOWER": "que"}]
+        [{"LOWER": "não"}, {"LOWER": "é"}, {"LOWER": "verdade"}, {"LOWER": "que"}],
+        [{"LOWER": "não"}, {"LOWER": "é"}, {"LOWER": "o"}, {"LOWER": "caso"}, {"LOWER": "que"}]
     ],
     "CONJUNCAO": [[{"LOWER": "e"}], [{"LOWER": "mas"}]],
     "DISJUNCAO": [[{"LOWER": "ou"}], [{"LOWER": "ora"}]],
