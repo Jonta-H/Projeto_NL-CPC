@@ -116,8 +116,8 @@ Abaixo estão exemplos de inputs processados pelo nosso agente, demonstrando ace
 
 | Input | Output Gerado | Análise do Erro |
 | :--- | :--- | :--- |
-| *"p e q"* (No modo NL→CPC) | $(P \land Q)$ | **Confusão de Modo.** O sistema interpretou "p" e "q" como palavras da frase, criando um glossário para elas, ao invés de entender que já eram variáveis. |
-| *"Todo homem é mortal..."* | $(P \rightarrow Q)$ | **Limitação de Lógica.** O sistema falha em capturar o quantificador "Todo" ($\forall$), pois opera apenas com Lógica Proposicional. |
+| *"Para fazer um omelete, é necessário quebrar ovos."* | $(P \rightarrow Q)$ | **Confusão de Modo.** O sistema não identifica condicionais disfarçadas. |
+| *"Todo homem é mortal..."* | $(P)$ | **Limitação de Lógica.** O sistema falha em capturar o quantificador "Todo" ($\forall$), pois opera apenas com Lógica Proposicional. |
 
 ---
 
