@@ -93,7 +93,7 @@ Utilizamos uma abordagem de **Parser Recursivo Assistido por LLM**:
 ### 2. CPC → NL (Lógica para Natural)
 Utilizamos uma abordagem generativa com Few-Shot Prompting:
 
-* **Normalização:** O input é limpo e padronizado (ex: conversão de `v` para `∨`).
+* **Normalização:** O input é limpo e padronizado.
 * **Glossário Automático:** A LLM gera um glossário contextual para as variáveis (ex: P = "O sol brilha").
 * **Geração Controlada:** O modelo recebe exemplos ("few-shot") para distinguir entre negações simples ("O gato não dorme") e negações de escopo ("Não é verdade que...").
 
